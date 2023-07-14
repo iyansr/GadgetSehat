@@ -7,7 +7,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import React, { useCallback } from 'react';
+import React, { Fragment, useCallback } from 'react';
 import Text from '@gs/components/basic/Text';
 import PaginationDots from '@gs/components/ui/PaginationDot';
 import { uspData, type USPData } from '../data';
@@ -87,29 +87,30 @@ const OnboardingScreen = () => {
   );
 
   return (
-    <View className="flex-1">
-      <FlatList<USPData>
-        data={uspData}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        snapToInterval={width}
-        scrollEnabled={false}
-        ref={ref}
-        onScroll={handleOnScroll}
-        renderItem={renderItem}
-      />
+    <Fragment>
+      <View className="flex-1">
+        <FlatList<USPData>
+          data={uspData}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          snapToInterval={width}
+          scrollEnabled={false}
+          ref={ref}
+          onScroll={handleOnScroll}
+          renderItem={renderItem}
+        />
 
-      <View className="pb-8 px-6">
-        <View className="items-center pb-4">
-          <PaginationDots activePage={activePage} totalPage={uspData.length} />
-        </View>
+        <View className="pb-8 px-6">
+          <View className="items-center pb-4">
+            <PaginationDots activePage={activePage} totalPage={uspData.length} />
+          </View>
 
-        <View className="py-2">
-          <MainButton text="Selanjutnya" onPress={() => handleScrollToNext()} />
+          <View className="py-2">
+            <MainButton text="Selanjutnya" onPress={() => handleScrollToNext()} />
+          </View>
         </View>
       </View>
-
       <PermissionModal
         isModalVisible={isModalVisible}
         onPressNext={isCompleteRequest => {
@@ -119,7 +120,7 @@ const OnboardingScreen = () => {
           }
         }}
       />
-    </View>
+    </Fragment>
   );
 };
 

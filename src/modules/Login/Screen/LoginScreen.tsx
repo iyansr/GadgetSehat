@@ -1,9 +1,17 @@
 import { Image, StatusBar, View } from 'react-native';
 import React from 'react';
+
 import Text from '@gs/components/basic/Text';
 import MainButton from '@gs/components/ui/MainButton';
+import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
 const LoginScreen = () => {
+  const navigation = useNavigation();
+
+  const handleNavigation = () => {
+    navigation.replace('EditProfileScreen');
+  };
+
   return (
     <View className="flex-1 p-6">
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -21,7 +29,7 @@ const LoginScreen = () => {
           />
         </View>
       </View>
-      <MainButton text="Login dengan Google" />
+      <MainButton text="Login dengan Google" onPress={handleNavigation} />
     </View>
   );
 };
