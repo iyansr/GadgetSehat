@@ -13,6 +13,7 @@
     "@codler/react-native-keyboard-aware-scroll-view": "^2.0.1",
     "@hookform/resolvers": "^3.1.1",
     "@react-native-community/datetimepicker": "^7.4.0",
+    "@react-native-google-signin/google-signin": "^10.0.1",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "clsx": "^1.2.1",

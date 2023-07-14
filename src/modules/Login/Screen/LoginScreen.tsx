@@ -4,12 +4,28 @@ import React from 'react';
 import Text from '@gs/components/basic/Text';
 import MainButton from '@gs/components/ui/MainButton';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { cn } from '@gs/lib/utils';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = React.useState(false);
 
   const handleNavigation = () => {
     navigation.replace('EditProfileScreen');
+  };
+
+  const handleLoginGoogle = async () => {
+    try {
+      setLoading(true);
+      await GoogleSignin.hasPlayServices();
+      await GoogleSignin.signIn();
+      handleNavigation();
+    } catch (error) {
+      console.log({ error });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,7 +45,12 @@ const LoginScreen = () => {
           />
         </View>
       </View>
-      <MainButton text="Login dengan Google" onPress={handleNavigation} />
+      <MainButton
+        text={loading ? 'Sedang Login...' : 'Login dengan Google'}
+        disabled={loading}
+        onPress={handleLoginGoogle}
+        className={cn({ 'opacity-70': loading })}
+      />
     </View>
   );
 };

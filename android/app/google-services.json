@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "502786721996",
+    "project_id": "gadgetsehat-51592",
+    "storage_bucket": "gadgetsehat-51592.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502786721996:android:f848f4ce463b1967a2da69",
+        "android_client_info": {
+          "package_name": "com.gadgetsehat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502786721996-teaa8c9pgedou21bpvfu743a1dg4ukpl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gadgetsehat",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "502786721996-ntb1d03pt0n5qp26kuqr1ngkldpatapq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAf1fyoPaunmTo7uSbkSpDQExGRU1UPlCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502786721996-9tcb98j2pqioh7jd06ho6jp1f6hkl97m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

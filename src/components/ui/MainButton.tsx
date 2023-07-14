@@ -12,7 +12,7 @@ const MainButton = ({ text, ...props }: Props) => {
   return (
     <TouchableItem
       {...props}
-      className="bg-primary py-2 items-center rounded-full"
+      className={cn('bg-primary py-2 items-center rounded-full', props.className)}
       containerStyle={cn('overflow-hidden rounded-full')}>
       <Text className="text-neutral-50 font-semibold text-lg">{text}</Text>
     </TouchableItem>

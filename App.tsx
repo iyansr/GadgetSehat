@@ -3,6 +3,8 @@ import React from 'react';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import MainStack from '@gs/lib/react-navigation/MainStack';
 
+import '@gs/lib/google/googleSignIn';
+
 const App = () => {
   return (
     <NavigationContainer
