@@ -13,10 +13,12 @@ import PaginationDots from '@gs/components/ui/PaginationDot';
 import { uspData, type USPData } from '../data';
 import MainButton from '@gs/components/ui/MainButton';
 import PermissionModal from '../components/PermissionModal';
+import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
 const OnboardingScreen = () => {
   const { width } = useWindowDimensions();
   const [isModalVisible, setModalVisible] = React.useState(false);
+  const navigation = useNavigation();
 
   const hideModal = () => {
     if (isModalVisible) {
@@ -46,10 +48,10 @@ const OnboardingScreen = () => {
       if (nextItemIndex <= lastItemIndex) {
         ref?.current?.scrollToIndex({ animated: true, index: nextItemIndex });
       } else {
-        ref?.current?.scrollToIndex({ animated: true, index: 0 });
+        navigation.replace('LoginScreen');
       }
     },
-    [activePage, showModal],
+    [activePage, showModal, navigation],
   );
 
   const handleOnScroll = useCallback(
