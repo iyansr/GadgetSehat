@@ -4,31 +4,53 @@ import {
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Pressable,
   View,
   useWindowDimensions,
 } from 'react-native';
 import React, { useCallback } from 'react';
 import Text from '@gs/components/basic/Text';
-import PaginationDots from '@gs/components/basic/PaginationDot';
+import PaginationDots from '@gs/components/ui/PaginationDot';
 import { uspData, type USPData } from '../data';
+import MainButton from '@gs/components/ui/MainButton';
+import PermissionModal from '../components/PermissionModal';
 
 const OnboardingScreen = () => {
   const { width } = useWindowDimensions();
-  const [activePage, setActivePage] = React.useState(0);
+  const [isModalVisible, setModalVisible] = React.useState(false);
 
+  const hideModal = () => {
+    if (isModalVisible) {
+      setModalVisible(false);
+    }
+  };
+
+  const showModal = useCallback(() => {
+    if (!isModalVisible) {
+      setModalVisible(true);
+    }
+  }, [isModalVisible]);
+
+  const [activePage, setActivePage] = React.useState(0);
   const ref = React.useRef<FlatList>(null);
 
-  const handleScrollToNext = useCallback(() => {
-    const lastItemIndex = uspData.length - 1;
-    const nextItemIndex = activePage + 1;
+  const handleScrollToNext = useCallback(
+    (isCompleteRequest = false) => {
+      const lastItemIndex = uspData.length - 1;
+      const nextItemIndex = activePage + 1;
 
-    if (nextItemIndex <= lastItemIndex) {
-      ref?.current?.scrollToIndex({ animated: true, index: nextItemIndex });
-    } else {
-      ref?.current?.scrollToIndex({ animated: true, index: 0 });
-    }
-  }, [activePage]);
+      if (activePage === 2 && !isCompleteRequest) {
+        showModal();
+        return;
+      }
+
+      if (nextItemIndex <= lastItemIndex) {
+        ref?.current?.scrollToIndex({ animated: true, index: nextItemIndex });
+      } else {
+        ref?.current?.scrollToIndex({ animated: true, index: 0 });
+      }
+    },
+    [activePage, showModal],
+  );
 
   const handleOnScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -81,12 +103,20 @@ const OnboardingScreen = () => {
           <PaginationDots activePage={activePage} totalPage={uspData.length} />
         </View>
 
-        <Pressable
-          className="bg-primary rounded-full py-2 items-center overflow-hidden"
-          onPress={handleScrollToNext}>
-          <Text className="text-neutral-50 font-semibold text-lg">Selanjutnya</Text>
-        </Pressable>
+        <View className="py-2">
+          <MainButton text="Selanjutnya" onPress={() => handleScrollToNext()} />
+        </View>
       </View>
+
+      <PermissionModal
+        isModalVisible={isModalVisible}
+        onPressNext={isCompleteRequest => {
+          if (isCompleteRequest) {
+            hideModal();
+            handleScrollToNext(isCompleteRequest);
+          }
+        }}
+      />
     </View>
   );
 };
