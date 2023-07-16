@@ -11,7 +11,7 @@ const InitialScreen = () => {
     data: fireStoreData,
     isLoading: isLoadingUser,
     error: fireStoreError,
-  } = useQueryGetFirestoreUser(user?.uid);
+  } = useQueryGetFirestoreUser();
   const navigation = useNavigation();
 
   useEffect(() => {

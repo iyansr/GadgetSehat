@@ -13,7 +13,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = React.useState(false);
   const authContext = useAuth();
   const handleNavigation = () => {
-    navigation.replace('EditProfileScreen');
+    navigation.replace('InitialScreen');
   };
 
   const handleLoginGoogle = async () => {
@@ -22,9 +22,7 @@ const LoginScreen = () => {
       await GoogleSignin.hasPlayServices();
       const { idToken } = await GoogleSignin.signIn();
 
-      const result = await authContext.googleLogin(idToken as string);
-
-      console.log({ result });
+      await authContext.googleLogin(idToken as string);
 
       handleNavigation();
     } catch (error) {

@@ -34,7 +34,7 @@ const EditProfileScreen = () => {
     data: fireStoreData,
     isLoading: isLoadingUser,
     error: fireStoreError,
-  } = useQueryGetFirestoreUser(user?.uid);
+  } = useQueryGetFirestoreUser();
 
   const { control, handleSubmit, setValue } = useForm<UserSchema>({
     resolver: zodResolver(updateUserSchema),

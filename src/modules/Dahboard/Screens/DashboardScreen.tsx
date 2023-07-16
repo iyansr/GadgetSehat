@@ -3,12 +3,11 @@ import { View, ScrollView, Image } from 'react-native';
 import React from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
-import BellIcon from '@gs/assets/svg/BellIcon';
-import PersonIcon from '@gs/assets/svg/PersonIcon';
 import DummyChart from '@gs/assets/svg/DummyChart';
 import DoubleArrowIcon from '@gs/assets/svg/DoubleArrowIcon';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import Articles from '../Components/Articles';
+import DashboardHeader from '../Components/DashboardHeader';
 
 const menu = [
   {
@@ -45,23 +44,7 @@ const Item = ({ item }: { item: (typeof menu)[0] }) => {
 const DashboardScreen = () => {
   return (
     <ScrollView>
-      <View className="px-4 pt-8">
-        <Image source={require('@gs/assets/images/profile_f.png')} className="w-16 h-16" />
-
-        <View className="flex flex-row items-center mt-4 space-x-3">
-          <View className="flex flex-col flex-1">
-            <Text className="text-2xl font-semibold text-primary">Hello, Ekawati</Text>
-            <Text className="text-xs">Bagaimana kabarmu hari ini?</Text>
-          </View>
-
-          <TouchableOpacity className="bg-primary rounded-full h-9 w-9 items-center justify-center">
-            <BellIcon />
-          </TouchableOpacity>
-          <TouchableOpacity className="bg-primary rounded-full h-9 w-9 items-center justify-center">
-            <PersonIcon />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <DashboardHeader />
 
       <View className="px-4 mt-5">
         <View className="border border-primary rounded-2xl pb-4">
