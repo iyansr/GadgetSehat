@@ -27,6 +27,7 @@ type Props = (NormalInputType | DateInputType | OptionInputType) & {
   label: string;
   options?: { label: string; value: string }[];
   onChangeText?: (value: string | Date) => void;
+  error?: string;
 } & TextInputProps;
 
 const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...props }, ref) => {
@@ -77,7 +78,9 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
           <View>
             <TouchableItem
               onPress={() => setModalVisible(true)}
-              className="bg-neutral-100 rounded-full px-4 py-3"
+              className={cn('bg-neutral-100 rounded-full px-4 py-3', {
+                'border border-red-500': !!props?.error,
+              })}
               containerStyle="rounded-full overflow-hidden">
               <Text
                 className={cn('text-sm', {
@@ -92,7 +95,9 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
           <View>
             <TouchableItem
               onPress={showDatePicker}
-              className="bg-neutral-100 rounded-full px-4 py-3"
+              className={cn('bg-neutral-100 rounded-full px-4 py-3', {
+                'border border-red-500': !!props?.error,
+              })}
               containerStyle="rounded-full overflow-hidden">
               <Text
                 className={cn('text-sm', {
@@ -107,13 +112,16 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
           <TextInput
             textAlignVertical="center"
             cursorColor="#1C74BB"
-            className="bg-neutral-100 px-4 rounded-full py-2"
+            className={cn('bg-neutral-100 px-4 rounded-full py-2', {
+              'border border-red-500': !!props?.error,
+            })}
             placeholderTextColor="#a3a3a3"
             ref={ref}
             {...props}
           />
         )}
       </View>
+      {!!props?.error && <Text className="text-red-500 text-xs mt-1 ml-2">{props.error}</Text>}
 
       {type === 'option' && (
         <ReactNativeModal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>

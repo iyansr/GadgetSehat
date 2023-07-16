@@ -5,6 +5,7 @@ export type StackParamList = {
   LoginScreen: undefined;
   EditProfileScreen: undefined;
   DashboardScreen: undefined;
+  InitialScreen: undefined;
 };
 
 export type RouteProp<T extends keyof StackParamList> = RoutePropBase<StackParamList, T>;

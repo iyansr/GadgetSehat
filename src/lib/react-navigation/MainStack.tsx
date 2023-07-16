@@ -5,6 +5,7 @@ import OnboardingScreen from '@gs/modules/Onboarding/Screen/OnboardingScreen';
 import LoginScreen from '@gs/modules/Login/Screen/LoginScreen';
 import EditProfileScreen from '@gs/modules/EditProfile/Screen/EditProfileScreen';
 import DashboardScreen from '@gs/modules/Dahboard/Screens/DashboardScreen';
+import InitialScreen from '@gs/modules/shared/screens/InitialScreen';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -14,6 +15,11 @@ const MainStack = () => {
       screenOptions={{
         animation: 'default',
       }}>
+      <Stack.Screen
+        name="InitialScreen"
+        component={InitialScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="OnboardingScreen"
         component={OnboardingScreen}

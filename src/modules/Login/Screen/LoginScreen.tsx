@@ -6,11 +6,12 @@ import MainButton from '@gs/components/ui/MainButton';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { cn } from '@gs/lib/utils';
+import useAuth from '@gs/modules/auth/hooks/useAuth';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = React.useState(false);
-
+  const authContext = useAuth();
   const handleNavigation = () => {
     navigation.replace('EditProfileScreen');
   };
@@ -19,7 +20,12 @@ const LoginScreen = () => {
     try {
       setLoading(true);
       await GoogleSignin.hasPlayServices();
-      await GoogleSignin.signIn();
+      const { idToken } = await GoogleSignin.signIn();
+
+      const result = await authContext.googleLogin(idToken as string);
+
+      console.log({ result });
+
       handleNavigation();
     } catch (error) {
       console.log({ error });

@@ -1,27 +1,18 @@
-import { Image, KeyboardAvoidingView, View } from 'react-native';
-import React, { Fragment, useState } from 'react';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, View } from 'react-native';
+import React, { Fragment, useEffect, useState } from 'react';
 import Text from '@gs/components/basic/Text';
 import InputForm from '@gs/components/ui/InputForm';
-import { z } from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { KeyboardAwareScrollView } from '@codler/react-native-keyboard-aware-scroll-view';
 import MainButton from '@gs/components/ui/MainButton';
 import EditProfileSuccessModal from '../Components/EditProfileSuccessModal';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
-
-type Gender = 'male' | 'female';
-
-const schema = z.object({
-  fullName: z.string(),
-  gender: z.enum(['male', 'female']),
-  birthDate: z.date(),
-  waNumber: z.string().regex(/^\+62\d{3,14}$/),
-  province: z.string(),
-  city: z.string(),
-});
-
-type LoginShema = z.infer<typeof schema>;
+import { Gender, UserSchema, updateUserSchema } from '@gs/modules/auth/schema';
+import useAuth from '@gs/modules/auth/hooks/useAuth';
+import useMutateUpdateUser from '@gs/modules/auth/hooks/useMutateUpdateUser';
+import { CommonActions } from '@react-navigation/native';
+import useQueryGetFirestoreUser from '@gs/modules/auth/hooks/useQueryGetFirestoreUser';
 
 const genderOption = [
   {
@@ -36,24 +27,58 @@ const genderOption = [
 
 const EditProfileScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
+  const { user, initializing } = useAuth();
   const navigation = useNavigation();
+  const { mutateAsync: updateUser, isLoading } = useMutateUpdateUser();
+  const {
+    data: fireStoreData,
+    isLoading: isLoadingUser,
+    error: fireStoreError,
+  } = useQueryGetFirestoreUser(user?.uid);
 
-  const { control } = useForm<LoginShema>({
-    resolver: zodResolver(schema),
+  const { control, handleSubmit, setValue } = useForm<UserSchema>({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      waNumber: '+62',
+    },
   });
 
-  const handleContinue = () => {
-    setModalVisible(false);
-    navigation.navigate('DashboardScreen');
+  useEffect(() => {
+    if (!!user && !fireStoreError) {
+      setValue('fullName', fireStoreData?.fullName ?? user?.displayName ?? '');
+    }
+  }, [fireStoreData, user, setValue, fireStoreError]);
+
+  const onSubmit = async (data: UserSchema) => {
+    try {
+      await updateUser({ userId: user?.uid as string, data });
+      setModalVisible(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('Terjadi Kesalahan', error?.message);
+      }
+    }
   };
+
+  const handleContinue = () => {
+    navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'DashboardScreen' }] }));
+  };
+
+  if (isLoadingUser || initializing) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator color="#1C74BB" size={64} />
+      </View>
+    );
+  }
 
   return (
     <Fragment>
-      <KeyboardAvoidingView className="flex-1">
+      <KeyboardAvoidingView className="flex-1" keyboardVerticalOffset={20}>
         <View className="flex-1">
           <KeyboardAwareScrollView
             enableResetScrollToCoords={false}
-            keyboardShouldPersistTaps="always">
+            keyboardShouldPersistTaps="handled">
             <View className="bg-primary py-5 items-center px-8 pb-20">
               <Text className="text-2xl text-center font-semibold text-white">Selamat Datang</Text>
               <Image
@@ -73,13 +98,15 @@ const EditProfileScreen = () => {
                 <Controller
                   control={control}
                   name="fullName"
-                  render={({ field }) => {
+                  render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        error={fieldState.error?.message}
                         label="Nama Lengkap"
                         placeholder="Nama"
                         onChangeText={text => field.onChange(String(text))}
                         value={field.value}
+                        defaultValue={field.value}
                       />
                     );
                   }}
@@ -89,9 +116,10 @@ const EditProfileScreen = () => {
                 <Controller
                   control={control}
                   name="gender"
-                  render={({ field }) => {
+                  render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        error={fieldState.error?.message}
                         label="Jenis Kelamin"
                         type="option"
                         placeholder="Jenis Kelamin"
@@ -108,9 +136,10 @@ const EditProfileScreen = () => {
                 <Controller
                   control={control}
                   name="birthDate"
-                  render={({ field }) => {
+                  render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        error={fieldState.error?.message}
                         label="Tanggal Lahir"
                         type="date"
                         placeholder="dd/mm/yyyy"
@@ -127,10 +156,30 @@ const EditProfileScreen = () => {
               <View>
                 <Controller
                   control={control}
-                  name="province"
-                  render={({ field }) => {
+                  name="waNumber"
+                  render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        error={fieldState.error?.message}
+                        label="Nomor WA"
+                        placeholder="+62..."
+                        onChangeText={text => field.onChange(String(text))}
+                        value={field.value}
+                        defaultValue={field.value}
+                      />
+                    );
+                  }}
+                />
+              </View>
+
+              <View>
+                <Controller
+                  control={control}
+                  name="province"
+                  render={({ field, fieldState }) => {
+                    return (
+                      <InputForm
+                        error={fieldState.error?.message}
                         label="Provinsi"
                         placeholder="Pilih Provinsi"
                         onChangeText={text => field.onChange(String(text))}
@@ -144,10 +193,11 @@ const EditProfileScreen = () => {
               <View>
                 <Controller
                   control={control}
-                  name="province"
-                  render={({ field }) => {
+                  name="city"
+                  render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        error={fieldState.error?.message}
                         label="Kota / Kabupaten"
                         placeholder="Pilih Kota / Kabupaten"
                         onChangeText={text => field.onChange(String(text))}
@@ -158,11 +208,14 @@ const EditProfileScreen = () => {
                 />
               </View>
             </View>
+            <View className="p-4 px-6">
+              <MainButton
+                text={isLoading ? 'Mohon tunggu...' : 'Lengkapi Profil'}
+                onPress={handleSubmit(onSubmit)}
+                disabled={isLoading}
+              />
+            </View>
           </KeyboardAwareScrollView>
-
-          <View className="p-4 px-6">
-            <MainButton text="Lengkapi Profil" onPress={() => setModalVisible(true)} />
-          </View>
         </View>
       </KeyboardAvoidingView>
       <EditProfileSuccessModal isVisible={isModalVisible} onContinue={handleContinue} />
