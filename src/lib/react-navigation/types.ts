@@ -6,6 +6,7 @@ export type StackParamList = {
   EditProfileScreen: undefined;
   DashboardScreen: undefined;
   InitialScreen: undefined;
+  ScreenBrightnessIntro: undefined;
 };
 
 export type RouteProp<T extends keyof StackParamList> = RoutePropBase<StackParamList, T>;

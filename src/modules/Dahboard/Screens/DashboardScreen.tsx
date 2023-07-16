@@ -8,6 +8,7 @@ import DoubleArrowIcon from '@gs/assets/svg/DoubleArrowIcon';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import Articles from '../Components/Articles';
 import DashboardHeader from '../Components/DashboardHeader';
+import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
 const menu = [
   {
@@ -25,8 +26,12 @@ const menu = [
 ];
 
 const Item = ({ item }: { item: (typeof menu)[0] }) => {
+  const navigation = useNavigation();
+
   return (
-    <TouchableOpacity className="bg-[#E4F3FF] aspect-square rounded-lg p-2 py-4">
+    <TouchableOpacity
+      className="bg-[#E4F3FF] aspect-square rounded-lg p-2 py-4"
+      onPress={() => navigation.navigate('ScreenBrightnessIntro')}>
       <View className="flex-1 text-center justify-center">
         <Image
           source={item.icon}

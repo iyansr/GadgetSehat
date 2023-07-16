@@ -1,19 +1,50 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  NativeStackNavigationOptions,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
 import { StackParamList } from './types';
 import OnboardingScreen from '@gs/modules/Onboarding/Screen/OnboardingScreen';
 import LoginScreen from '@gs/modules/Login/Screen/LoginScreen';
 import EditProfileScreen from '@gs/modules/EditProfile/Screen/EditProfileScreen';
 import DashboardScreen from '@gs/modules/Dahboard/Screens/DashboardScreen';
 import InitialScreen from '@gs/modules/shared/screens/InitialScreen';
+import ScreenBrightnessIntro from '@gs/modules/screen-brightness/screens/ScreenBrightnessIntro';
+import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
+import ChevronLeft from '@gs/assets/svg/ChevronLeft';
+import useNavigation from './useNavigation';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
+const HeaderBack = () => {
+  const navigation = useNavigation();
+  return (
+    <TouchableOpacity onPress={() => navigation.goBack()} className="p-3 -ml-4">
+      <ChevronLeft />
+    </TouchableOpacity>
+  );
+};
+
 const MainStack = () => {
+  const headerOptions: NativeStackNavigationOptions = {
+    headerStyle: {
+      backgroundColor: '#1C74BB',
+    },
+    headerTitleStyle: {
+      color: '#fff',
+      fontWeight: '600',
+      fontSize: 18,
+    },
+    headerTitleAlign: 'center',
+
+    headerLeft: HeaderBack,
+  };
+
   return (
     <Stack.Navigator
       screenOptions={{
         animation: 'default',
+        ...headerOptions,
       }}>
       <Stack.Screen
         name="InitialScreen"
@@ -35,6 +66,11 @@ const MainStack = () => {
         name="DashboardScreen"
         component={DashboardScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ScreenBrightnessIntro"
+        component={ScreenBrightnessIntro}
+        options={{ title: 'Pencahayaan Gadget' }}
       />
     </Stack.Navigator>
   );
