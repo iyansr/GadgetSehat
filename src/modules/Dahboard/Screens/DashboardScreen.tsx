@@ -10,28 +10,17 @@ import Articles from '../Components/Articles';
 import DashboardHeader from '../Components/DashboardHeader';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
-const menu = [
-  {
-    title: 'Pencayahaan Gadget',
-    icon: require('@gs/assets/images/dash_brightness.png'),
-  },
-  {
-    title: 'Posisi Handphone',
-    icon: require('@gs/assets/images/dash_phone.png'),
-  },
-  {
-    title: 'Report Sehat Kamu',
-    icon: require('@gs/assets/images/dash_report.png'),
-  },
-];
+type Menu = {
+  title: string;
+  icon: any;
+  action: () => void;
+};
 
-const Item = ({ item }: { item: (typeof menu)[0] }) => {
-  const navigation = useNavigation();
-
+const Item = ({ item }: { item: Menu }) => {
   return (
     <TouchableOpacity
       className="bg-[#E4F3FF] aspect-square rounded-lg p-2 py-4"
-      onPress={() => navigation.navigate('ScreenBrightnessIntro')}>
+      onPress={item.action}>
       <View className="flex-1 text-center justify-center">
         <Image
           source={item.icon}
@@ -47,6 +36,26 @@ const Item = ({ item }: { item: (typeof menu)[0] }) => {
 };
 
 const DashboardScreen = () => {
+  const navigation = useNavigation();
+
+  const menu: Menu[] = [
+    {
+      title: 'Pencayahaan Gadget',
+      icon: require('@gs/assets/images/dash_brightness.png'),
+      action: () => navigation.navigate('ScreenBrightnessIntro'),
+    },
+    {
+      title: 'Posisi Handphone',
+      icon: require('@gs/assets/images/dash_phone.png'),
+      action: () => {},
+    },
+    {
+      title: 'Report Sehat Kamu',
+      icon: require('@gs/assets/images/dash_report.png'),
+      action: () => {},
+    },
+  ];
+
   return (
     <ScrollView>
       <DashboardHeader />

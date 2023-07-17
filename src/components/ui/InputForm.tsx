@@ -1,5 +1,5 @@
-import { TextInputProps, View } from 'react-native';
-import React, { Fragment, forwardRef, useMemo, useState } from 'react';
+import { FlatList, ListRenderItem, TextInputProps, View } from 'react-native';
+import React, { Fragment, forwardRef, useCallback, useMemo, useState } from 'react';
 import { TextInput } from 'react-native';
 import Text from '../basic/Text';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
@@ -26,6 +26,7 @@ type OptionInputType = {
 type Props = (NormalInputType | DateInputType | OptionInputType) & {
   label: string;
   options?: { label: string; value: string }[];
+  onChangeOption?: ({ label, value }: { label: string; value: string }) => void;
   onChangeText?: (value: string | Date) => void;
   error?: string;
 } & TextInputProps;
@@ -69,6 +70,26 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
     }
     return '';
   }, [type, value, props.options, props.placeholder]);
+
+  const renderOption = useCallback<ListRenderItem<{ label: string; value: string }>>(
+    ({ item }) => {
+      return (
+        <TouchableItem
+          className="p-2 flex-row items-center bg-neutral-100 mb-2 rounded-md"
+          onPress={() => {
+            props.onChangeText?.(item.value);
+            props.onChangeOption?.(item);
+            setModalVisible(false);
+          }}>
+          <View className="flex-1">
+            <Text>{item.label}</Text>
+          </View>
+          {item.value === value && <CheckMark height={12} width={12} />}
+        </TouchableItem>
+      );
+    },
+    [props, value],
+  );
 
   return (
     <Fragment>
@@ -126,20 +147,11 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
       {type === 'option' && (
         <ReactNativeModal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
           <View className="shadow-lg bg-white rounded-2xl p-4 space-y-2">
-            {props?.options?.map((option, index) => (
-              <TouchableItem
-                key={String(index)}
-                className="p-2 flex-row items-center"
-                onPress={() => {
-                  props.onChangeText?.(option.value);
-                  setModalVisible(false);
-                }}>
-                <View className="flex-1">
-                  <Text>{option.label}</Text>
-                </View>
-                {option.value === value && <CheckMark height={12} width={12} />}
-              </TouchableItem>
-            ))}
+            <FlatList
+              data={props.options}
+              renderItem={renderOption}
+              keyExtractor={item => String(item.value)}
+            />
           </View>
         </ReactNativeModal>
       )}

@@ -13,6 +13,8 @@ import useAuth from '@gs/modules/auth/hooks/useAuth';
 import useMutateUpdateUser from '@gs/modules/auth/hooks/useMutateUpdateUser';
 import { CommonActions } from '@react-navigation/native';
 import useQueryGetFirestoreUser from '@gs/modules/auth/hooks/useQueryGetFirestoreUser';
+import useQueryProvinces from '@gs/modules/shared/hooks/useQueryProvinces';
+import useQueryCities from '@gs/modules/shared/hooks/useQueryCities';
 
 const genderOption = [
   {
@@ -35,6 +37,11 @@ const EditProfileScreen = () => {
     isLoading: isLoadingUser,
     error: fireStoreError,
   } = useQueryGetFirestoreUser();
+  const [selectedProvinceId, setSelectedProvinceId] = useState('');
+  const { data: provinces } = useQueryProvinces();
+  const { data: cities } = useQueryCities(selectedProvinceId);
+
+  console.log(selectedProvinceId);
 
   const { control, handleSubmit, setValue } = useForm<UserSchema>({
     resolver: zodResolver(updateUserSchema),
@@ -179,10 +186,23 @@ const EditProfileScreen = () => {
                   render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        type="option"
+                        options={provinces?.map(province => ({
+                          label: province.name,
+                          value: province.name,
+                        }))}
                         error={fieldState.error?.message}
                         label="Provinsi"
                         placeholder="Pilih Provinsi"
-                        onChangeText={text => field.onChange(String(text))}
+                        onChangeText={text => {
+                          field.onChange(String(text));
+                          setValue('city', '');
+                        }}
+                        onChangeOption={option => {
+                          setSelectedProvinceId(
+                            provinces?.find(province => province.name === option.label)?.id ?? '',
+                          );
+                        }}
                         value={field.value}
                       />
                     );
@@ -197,6 +217,11 @@ const EditProfileScreen = () => {
                   render={({ field, fieldState }) => {
                     return (
                       <InputForm
+                        type="option"
+                        options={cities?.map(city => ({
+                          label: city.name,
+                          value: city.name,
+                        }))}
                         error={fieldState.error?.message}
                         label="Kota / Kabupaten"
                         placeholder="Pilih Kota / Kabupaten"
