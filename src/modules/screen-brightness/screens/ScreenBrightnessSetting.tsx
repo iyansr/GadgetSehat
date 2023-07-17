@@ -1,0 +1,77 @@
+import { View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import Text from '@gs/components/basic/Text';
+import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
+import BrightnessIcon from '@gs/assets/svg/BrightnessIcon';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import Slider from '@react-native-community/slider';
+import LevelsBadge from '@gs/components/ui/LevelsBadge';
+
+const ScreenBrightnessSetting = () => {
+  const [level, setLevel] = useState(25);
+
+  return (
+    <ScrollView>
+      <View className="bg-primary py-5 items-center px-8 pb-20">
+        <AnimatedCircularProgress
+          size={150}
+          width={25}
+          fill={level}
+          tintColor="#189741"
+          backgroundColor="#E4F3FF"
+          arcSweepAngle={360}
+          rotation={360}>
+          {fill => (
+            <View className="bg-white flex-1 w-full items-center justify-center">
+              <Text className="font-semibold text-5xl">{Math.floor(fill)}</Text>
+            </View>
+          )}
+        </AnimatedCircularProgress>
+        <View className="flex-row justify-center mt-6">
+          <TouchableOpacity className="bg-white px-4 py-2 rounded-xl flex-row items-center">
+            <BrightnessIcon color="#1C74BB" width={28} height={28} />
+            <Text className="text-lg text-primary font-semibold ml-4">Cek Ulang</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View className="px-6 pt-8 bg-white -mt-10 rounded-t-3xl space-y-4">
+        <Text className="font-semibold text-center">Pencahayaan Gadget Kamu</Text>
+
+        <View className="flex-row justify-center">
+          <LevelsBadge level="good" text="Sehat" size="large" />
+        </View>
+
+        <View className="border border-primary rounded-2xl p-6">
+          <Text className="font-semibold text-center">Rekomendasi pengaturan GadgetSehat</Text>
+          <View className="flex items-center flex-row my-4">
+            <View>
+              <BrightnessIcon width={18} height={18} />
+            </View>
+            <View className="flex-1 items-center">
+              <Slider
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={{ width: '100%', height: 50 }}
+                minimumValue={0}
+                maximumValue={100}
+                value={level}
+                minimumTrackTintColor="#1C74BB"
+                maximumTrackTintColor="#1C74BB"
+                thumbTintColor="#1C74BB"
+                onValueChange={value => setLevel(value)}
+              />
+            </View>
+            <View>
+              <BrightnessIcon />
+            </View>
+          </View>
+
+          <TouchableOpacity className="bg-[#ECF7F9] px-4 py-2 rounded-full flex-row justify-center mt-2 border border-primary">
+            <Text className="text-center text-primary font-semibold">Atur Sekarang</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+export default ScreenBrightnessSetting;

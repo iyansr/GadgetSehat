@@ -10,10 +10,11 @@ import AttentionBadge from '@gs/assets/svg/AttentionBadge';
 
 type LevelsBadgeProps = {
   level?: 'good' | 'danger' | 'warning' | 'normal' | 'attention';
+  size?: 'small' | 'medium' | 'large';
   text?: string;
 };
 
-const LevelsBadge = ({ level = 'good', text = '' }: LevelsBadgeProps) => {
+const LevelsBadge = ({ level = 'good', text = '', size = 'small' }: LevelsBadgeProps) => {
   const color: Record<string, string> = {
     good: 'bg-green-600',
     danger: 'bg-red-600',
@@ -33,13 +34,30 @@ const LevelsBadge = ({ level = 'good', text = '' }: LevelsBadgeProps) => {
   const Badge = badgeObj[level];
 
   return (
-    <View className={cn('flex-row items-center rounded-md py-1', color[level])}>
+    <View
+      className={cn('flex-row items-center rounded-lg', color[level], {
+        'py-1 px-2': size === 'small',
+        'py-2 px-4': size === 'medium',
+        'py-2 px-6': size === 'large',
+      })}>
       <View className="pl-4">
-        <Text className="text-[10px] font-medium text-white">{text}</Text>
+        <Text
+          className={cn('font-medium text-white', {
+            'text-[10px]': size === 'small',
+            'text-[12px]': size === 'medium',
+            'text-[14px]': size === 'large',
+          })}>
+          {text}
+        </Text>
       </View>
       <View className="relative w-7">
-        <View className="absolute -top-4 right-1">
-          <Badge />
+        <View
+          className={cn('absolute', {
+            '-top-4 right-1': size === 'small',
+            '-top-5 right-1': size === 'medium',
+            '-top-6 -right-4': size === 'large',
+          })}>
+          <Badge width={size === 'large' ? 32 : 22} height={size === 'large' ? 32 : 22} />
         </View>
       </View>
     </View>

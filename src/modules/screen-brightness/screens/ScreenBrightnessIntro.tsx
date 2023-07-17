@@ -3,8 +3,10 @@ import React from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import BrightnessIcon from '@gs/assets/svg/BrightnessIcon';
+import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
 const ScreenBrightnessIntro = () => {
+  const navigation = useNavigation();
   return (
     <View className="flex-1 items-center">
       <Image
@@ -18,7 +20,9 @@ const ScreenBrightnessIntro = () => {
         </Text>
         <Text className="text-xs text-center my-6">Cek kecerahan layar Gadget kamu sekarang!</Text>
         <View className="flex-row justify-center">
-          <TouchableOpacity className="bg-primary px-4 py-2 rounded-xl flex-row items-center">
+          <TouchableOpacity
+            className="bg-primary px-4 py-2 rounded-xl flex-row items-center"
+            onPress={() => navigation.navigate('ScreenBrightnessSetting')}>
             <BrightnessIcon color="#FFF" width={28} height={28} />
             <Text className="text-lg text-white font-semibold ml-4">Mulai Cek!</Text>
           </TouchableOpacity>

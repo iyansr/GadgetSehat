@@ -13,6 +13,7 @@ import ScreenBrightnessIntro from '@gs/modules/screen-brightness/screens/ScreenB
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import useNavigation from './useNavigation';
+import ScreenBrightnessSetting from '@gs/modules/screen-brightness/screens/ScreenBrightnessSetting';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -36,7 +37,7 @@ const MainStack = () => {
       fontSize: 18,
     },
     headerTitleAlign: 'center',
-
+    headerShadowVisible: false,
     headerLeft: HeaderBack,
   };
 
@@ -70,6 +71,11 @@ const MainStack = () => {
       <Stack.Screen
         name="ScreenBrightnessIntro"
         component={ScreenBrightnessIntro}
+        options={{ title: 'Pencahayaan Gadget' }}
+      />
+      <Stack.Screen
+        name="ScreenBrightnessSetting"
+        component={ScreenBrightnessSetting}
         options={{ title: 'Pencahayaan Gadget' }}
       />
     </Stack.Navigator>

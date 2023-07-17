@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { SvgProps, Path } from 'react-native-svg';
 const GoodBadge = (props: SvgProps) => (
-  <Svg width={22} height={22} fill="none" {...props}>
+  <Svg width={22} height={22} viewBox="0 0 22 22" fill="none" {...props}>
     <Path
       fill="#ACFFB9"
       fillRule="evenodd"
