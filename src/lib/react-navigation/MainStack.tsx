@@ -16,6 +16,8 @@ import useNavigation from './useNavigation';
 import ScreenBrightnessSetting from '@gs/modules/screen-brightness/screens/ScreenBrightnessSetting';
 import PhonePositionIntro from '@gs/modules/phone-position/screen/PhonePositionIntro';
 import PhonePositionScreen from '@gs/modules/phone-position/screen/PhonePositionScreen';
+import ScreenTimeIntro from '@gs/modules/screen-time/screens/ScreenTimeIntro';
+import ScreenTime from '@gs/modules/screen-time/screens/ScreenTime';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -90,6 +92,12 @@ const MainStack = () => {
         component={PhonePositionScreen}
         options={{ title: 'Posisi Handphone' }}
       />
+      <Stack.Screen
+        name="ScreenTimeIntro"
+        component={ScreenTimeIntro}
+        options={{ title: 'Screen Time' }}
+      />
+      <Stack.Screen name="ScreenTime" component={ScreenTime} options={{ title: 'Screen Time' }} />
     </Stack.Navigator>
   );
 };

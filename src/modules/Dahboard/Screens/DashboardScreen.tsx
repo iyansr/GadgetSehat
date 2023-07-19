@@ -69,7 +69,9 @@ const DashboardScreen = () => {
               <Text className="text-xl font-medium">4h 30m</Text>
             </View>
             <View className="flex-1 items-end">
-              <TouchableOpacity className="bg-primary rounded-full pl-3 pr-1 py-[2px] flex-row items-center">
+              <TouchableOpacity
+                className="bg-primary rounded-full pl-3 pr-1 py-[2px] flex-row items-center"
+                onPress={() => navigation.navigate('ScreenTimeIntro')}>
                 <Text className="text-[10px] text-white">Atur Screen Time</Text>
                 <DoubleArrowIcon />
               </TouchableOpacity>

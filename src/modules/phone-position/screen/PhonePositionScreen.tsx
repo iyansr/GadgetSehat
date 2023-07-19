@@ -13,7 +13,7 @@ const PhonePositionScreen = () => {
   ).current;
 
   useEffect(() => {
-    setUpdateIntervalForType(SensorTypes.gyroscope, 16);
+    setUpdateIntervalForType(SensorTypes.gyroscope, 50);
     let lastX = [0];
     let Listener = gyroscope.subscribe(({ x }) => {
       lastX.push(Math.round(x / 0.0025));
