@@ -14,6 +14,8 @@ import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import useNavigation from './useNavigation';
 import ScreenBrightnessSetting from '@gs/modules/screen-brightness/screens/ScreenBrightnessSetting';
+import PhonePositionIntro from '@gs/modules/phone-position/screen/PhonePositionIntro';
+import PhonePositionScreen from '@gs/modules/phone-position/screen/PhonePositionScreen';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -77,6 +79,16 @@ const MainStack = () => {
         name="ScreenBrightnessSetting"
         component={ScreenBrightnessSetting}
         options={{ title: 'Pencahayaan Gadget' }}
+      />
+      <Stack.Screen
+        name="PhonePositionIntro"
+        component={PhonePositionIntro}
+        options={{ title: 'Posisi Handphone' }}
+      />
+      <Stack.Screen
+        name="PhonePositionScreen"
+        component={PhonePositionScreen}
+        options={{ title: 'Posisi Handphone' }}
       />
     </Stack.Navigator>
   );

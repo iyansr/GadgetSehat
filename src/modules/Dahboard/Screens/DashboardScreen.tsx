@@ -47,7 +47,7 @@ const DashboardScreen = () => {
     {
       title: 'Posisi Handphone',
       icon: require('@gs/assets/images/dash_phone.png'),
-      action: () => {},
+      action: () => navigation.navigate('PhonePositionIntro'),
     },
     {
       title: 'Report Sehat Kamu',

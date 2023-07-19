@@ -8,6 +8,8 @@ export type StackParamList = {
   InitialScreen: undefined;
   ScreenBrightnessIntro: undefined;
   ScreenBrightnessSetting: undefined;
+  PhonePositionIntro: undefined;
+  PhonePositionScreen: undefined;
 };
 
 export type RouteProp<T extends keyof StackParamList> = RoutePropBase<StackParamList, T>;
