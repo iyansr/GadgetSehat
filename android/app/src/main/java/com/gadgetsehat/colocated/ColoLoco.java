@@ -19,6 +19,7 @@ class ColoLoco {
     // This list is auto-generated. Do not edit manually.
 
     modules.add(new GyroCheckerModule(reactContext));
+    modules.add(new ScreenTimeModule(reactContext));
 
 
     return modules;
