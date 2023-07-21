@@ -1,3 +1,14 @@
+
+# React Native Colo Loco autolinks native files colocated next to your JS files
+# More info here: https://github.com/jamonholmgren/react-native-colo-loco
+require_relative '../node_modules/react-native-colo-loco/scripts/ios.rb'
+link_colocated_native_files(
+  app_name: 'GadgetSehat',
+  app_path: "../src",
+  exclude_targets: ['GadgetSehatTests']
+)
+
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(

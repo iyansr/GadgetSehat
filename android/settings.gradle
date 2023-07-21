@@ -1,3 +1,15 @@
+
+// React Native Colo Loco autolinks native files colocated next to your JS files
+// More info here: https://github.com/jamonholmgren/react-native-colo-loco
+apply from: '../node_modules/react-native-colo-loco/scripts/android.groovy'
+linkColocatedNativeFiles([
+  appName: "GadgetSehat",
+  appPath: "../src",
+  appPackageName: "com.gadgetsehat",
+  androidPath: "./android/app/src/main/java/com/gadgetsehat"
+])
+
+
 rootProject.name = 'GadgetSehat'
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'

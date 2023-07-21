@@ -17,7 +17,6 @@ const PhonePositionScreen = () => {
     let lastX = [0];
     let Listener = gyroscope.subscribe(({ x }) => {
       lastX.push(Math.round(x / 0.0025));
-      // setAngle(lastX.reduce((a, b) => a + b) / lastX.length);
       rotate.setValue(lastX.reduce((a, b) => a + b) / lastX.length);
     });
     return () => {

@@ -1,12 +1,34 @@
 import { Image, View } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import ArrowCenter from '@gs/assets/svg/ArrowCenter';
 
+import GyroscopeModule from '@gs/lib/native/gyrochecker';
+import { cn } from '@gs/lib/utils';
+
 const PhonePositionIntro = () => {
   const navigation = useNavigation();
+
+  const [hasGyro, setHasGyro] = React.useState(false);
+
+  const checkHasGyro = async () => {
+    const _hasGyro = await GyroscopeModule.hasGyroscope();
+    setHasGyro(_hasGyro);
+  };
+
+  useEffect(() => {
+    checkHasGyro();
+  }, []);
+
+  const handleNavigation = async () => {
+    if (!hasGyro) {
+      return;
+    }
+    navigation.navigate('PhonePositionScreen');
+  };
+
   return (
     <View className="flex-1 items-center">
       <Image
@@ -22,12 +44,18 @@ const PhonePositionIntro = () => {
         <Text className="text-xs text-center my-6">Cek Posisi Gadget kamu sekarang!</Text>
         <View className="flex-row justify-center">
           <TouchableOpacity
-            className="bg-primary px-4 py-2 rounded-xl flex-row items-center"
-            onPress={() => navigation.navigate('PhonePositionScreen')}>
+            disabled={!hasGyro}
+            className={cn('bg-primary px-4 py-2 rounded-xl flex-row items-center', {
+              'opacity-70': !hasGyro,
+            })}
+            onPress={handleNavigation}>
             <ArrowCenter color="#FFF" width={28} height={28} />
             <Text className="text-lg text-white font-semibold ml-4">Mulai Cek!</Text>
           </TouchableOpacity>
         </View>
+        <Text className="text-xs text-center my-6">
+          Handphone anda tidak memiliki fitur ini, dikarenakan tidak memiliki fitur gyroscope
+        </Text>
       </View>
     </View>
   );
