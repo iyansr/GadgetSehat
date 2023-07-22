@@ -1,9 +1,10 @@
 import { Image, Pressable, ScrollView, View } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactNativeModal from 'react-native-modal';
 import Text from '@gs/components/basic/Text';
 import MainButton from '@gs/components/ui/MainButton';
 import CheckMark from '@gs/assets/svg/CheckMark';
+import ScreenTimeModule from '@gs/lib/native/screentime/screentime';
 
 const Item = ({
   onPress,
@@ -38,8 +39,22 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
     notification: false,
   });
 
+  const fetchPermission = async () => {
+    const screenTimePermission = await ScreenTimeModule.checkPermissionAccess();
+    setRequests(prev => ({ ...prev, api: screenTimePermission }));
+  };
+
+  useEffect(() => {
+    fetchPermission();
+  });
+
   const handleRequest = useCallback((key: keyof typeof requests) => {
-    setRequests(prev => ({ ...prev, [key]: true }));
+    if (key === 'api') {
+      ScreenTimeModule.openUsageSettings();
+      fetchPermission();
+    } else {
+      setRequests(prev => ({ ...prev, [key]: true }));
+    }
   }, []);
 
   const handlePressNext = () => {

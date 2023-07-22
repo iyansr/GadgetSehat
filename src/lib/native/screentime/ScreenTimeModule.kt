@@ -151,14 +151,13 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
     }
 
     @ReactMethod
-    fun checkPermissionAccess(): Boolean {
+    fun checkPermissionAccess(promise: Promise) {
         return try {
             val appOpsManager = reactContext.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
             val mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), reactContext.packageName)
-            mode == AppOpsManager.MODE_ALLOWED
+            promise.resolve(mode == AppOpsManager.MODE_ALLOWED)
         } catch (e: Exception){
-            e.printStackTrace()
-            false
+            promise.reject("Error",e)
         }
     }
 
