@@ -12,6 +12,7 @@ export type StackParamList = {
   PhonePositionScreen: undefined;
   ScreenTimeIntro: undefined;
   ScreenTime: undefined;
+  HealthReportScreen: undefined;
 };
 
 export type RouteProp<T extends keyof StackParamList> = RoutePropBase<StackParamList, T>;

@@ -18,6 +18,7 @@ import PhonePositionIntro from '@gs/modules/phone-position/screen/PhonePositionI
 import PhonePositionScreen from '@gs/modules/phone-position/screen/PhonePositionScreen';
 import ScreenTimeIntro from '@gs/modules/screen-time/screens/ScreenTimeIntro';
 import ScreenTime from '@gs/modules/screen-time/screens/ScreenTime';
+import HealthReportScreen from '@gs/modules/health-report/screen/HealthReportScreen';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -98,6 +99,11 @@ const MainStack = () => {
         options={{ title: 'Screen Time' }}
       />
       <Stack.Screen name="ScreenTime" component={ScreenTime} options={{ title: 'Screen Time' }} />
+      <Stack.Screen
+        name="HealthReportScreen"
+        component={HealthReportScreen}
+        options={{ title: 'Report Sehat Kamu' }}
+      />
     </Stack.Navigator>
   );
 };

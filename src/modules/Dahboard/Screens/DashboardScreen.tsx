@@ -52,7 +52,7 @@ const DashboardScreen = () => {
     {
       title: 'Report Sehat Kamu',
       icon: require('@gs/assets/images/dash_report.png'),
-      action: () => {},
+      action: () => navigation.navigate('HealthReportScreen'),
     },
   ];
 

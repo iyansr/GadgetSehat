@@ -16,7 +16,7 @@ export type ScreenTimeData = {
 
 export type ScreenTimeModuleType = {
   getScreenTime: () => Promise<ScreenTimeData>;
-  checkPermissionAccess: () => Promise<boolean>;
+  checkPermissionAccess: () => boolean;
   openUsageSettings: () => void;
 };
 

@@ -151,15 +151,15 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
     }
 
     @ReactMethod
-    fun checkPermissionAccess(promise: Promise) {
-        try {
+    fun checkPermissionAccess(): Boolean {
+        return try {
             val appOpsManager = reactContext.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
             val mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), reactContext.packageName)
-            promise.resolve(mode == AppOpsManager.MODE_ALLOWED)
+            mode == AppOpsManager.MODE_ALLOWED
         } catch (e: Exception){
-            promise.reject("Error check permission:", e)
+            e.printStackTrace()
+            false
         }
-
     }
 
     private class UsageComparator : Comparator<String> {
