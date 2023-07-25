@@ -1,10 +1,11 @@
 import { Image, Pressable, ScrollView, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactNativeModal from 'react-native-modal';
 import Text from '@gs/components/basic/Text';
 import MainButton from '@gs/components/ui/MainButton';
 import CheckMark from '@gs/assets/svg/CheckMark';
 import ScreenTimeModule from '@gs/lib/native/screentime/screentime';
+import useAppUsagePermission from '@gs/modules/shared/hooks/useAppUsagePermission';
 
 const Item = ({
   onPress,
@@ -33,32 +34,19 @@ type Props = {
 };
 
 const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
+  const { data: api } = useAppUsagePermission();
+
   const [requests, setRequests] = useState({
-    api: false,
     appsOnTop: false,
     notification: false,
   });
 
-  const fetchPermission = async () => {
-    const screenTimePermission = await ScreenTimeModule.checkPermissionAccess();
-    setRequests(prev => ({ ...prev, api: screenTimePermission }));
-  };
-
-  useEffect(() => {
-    fetchPermission();
-  });
-
   const handleRequest = useCallback((key: keyof typeof requests) => {
-    if (key === 'api') {
-      ScreenTimeModule.openUsageSettings();
-      fetchPermission();
-    } else {
-      setRequests(prev => ({ ...prev, [key]: true }));
-    }
+    setRequests(prev => ({ ...prev, [key]: true }));
   }, []);
 
   const handlePressNext = () => {
-    const isCompleteRequest = Object.values(requests).every(request => request);
+    const isCompleteRequest = Object.values(requests).every(request => request) && api;
     onPressNext?.(isCompleteRequest);
   };
 
@@ -81,9 +69,13 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
 
           <View className="mt-6 space-y-2">
             <Item
-              onPress={() => handleRequest('api')}
+              onPress={() => {
+                if (!api) {
+                  ScreenTimeModule.openUsageSettings();
+                }
+              }}
               text="Atur Perijinan API"
-              enabled={requests.api}
+              enabled={!!api}
             />
             <Item
               onPress={() => handleRequest('appsOnTop')}

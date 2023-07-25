@@ -1,14 +1,15 @@
 import { Image, ScrollView, Switch, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
-import { cn } from '@gs/lib/utils';
+import { cn, convertMsToTime } from '@gs/lib/utils';
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
 import DummyChartHealth from '@gs/assets/svg/DummyChartHealth';
 import ArrowDownIcon from '@gs/assets/svg/ArrowDownIcon';
-import ScreenTimeModule, { ScreenTimeData } from '@gs/lib/native/screentime/screentime';
+import useQueryAppUsage from '@gs/modules/shared/hooks/useQueryAppUsage';
+import { getUnixTime, startOfDay } from 'date-fns';
 
 const screentimeReport = [
   {
@@ -25,46 +26,12 @@ const screentimeReport = [
   },
 ];
 
-function padTo2Digits(num: number) {
-  return num.toString().padStart(2, '0');
-}
-
-function convertMsToTime(milliseconds: number) {
-  let seconds = Math.floor(milliseconds / 1000);
-  let minutes = Math.floor(seconds / 60);
-  let hours = Math.floor(minutes / 60);
-
-  seconds = seconds % 60;
-  minutes = minutes % 60;
-
-  // 👇️ If you don't want to roll hours over, e.g. 24 to 00
-  // 👇️ comment (or remove) the line below
-  // commenting next line gets you `24:00:00` instead of `00:00:00`
-  // or `36:15:31` instead of `12:15:31`, etc.
-  hours = hours % 24;
-
-  return `${padTo2Digits(hours)}h ${padTo2Digits(minutes)}m `;
-}
-
 const HealthReportScreen = () => {
-  const [appUsageReport, setAppUsageReport] = useState<ScreenTimeData | null>(null);
+  const startOfDayInMilliseconds = getUnixTime(startOfDay(new Date()));
+  const { data: appUsageReport } = useQueryAppUsage({ start: 0, end: startOfDayInMilliseconds });
+
   const [value, setValue] = React.useState(false);
   const [value1, setValue1] = React.useState(false);
-
-  const fetchScreenTimeReport = async () => {
-    const result = await ScreenTimeModule.getScreenTime();
-
-    const final: ScreenTimeData = {
-      ...result,
-      appUsageList: result.appUsageList.sort((a, b) => b.usageTime - a.usageTime).slice(0, 8),
-    };
-
-    setAppUsageReport(final);
-  };
-
-  useEffect(() => {
-    fetchScreenTimeReport();
-  }, []);
 
   return (
     <ScrollView scrollIndicatorInsets={{ right: 1 }}>

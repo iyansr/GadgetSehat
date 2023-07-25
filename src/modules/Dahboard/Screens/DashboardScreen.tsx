@@ -1,14 +1,21 @@
 /* eslint-disable react-native/no-inline-styles */
-import { View, ScrollView, Image } from 'react-native';
-import React from 'react';
+import { View, ScrollView, Image, Dimensions } from 'react-native';
+import React, { useMemo } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
-import DummyChart from '@gs/assets/svg/DummyChart';
 import DoubleArrowIcon from '@gs/assets/svg/DoubleArrowIcon';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import Articles from '../Components/Articles';
 import DashboardHeader from '../Components/DashboardHeader';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
+import { LineChart } from 'react-native-chart-kit';
+import useQueryAppUsage from '@gs/modules/shared/hooks/useQueryAppUsage';
+import { format, getUnixTime, sub } from 'date-fns';
+import { ScreenTimeInterval } from '@gs/lib/native/screentime/screentime';
+import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
+import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
+import DangerIcon from '@gs/assets/svg/DangerIcon';
+import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
 
 type Menu = {
   title: string;
@@ -37,6 +44,35 @@ const Item = ({ item }: { item: Menu }) => {
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
+  const sevenDaysAgo = Math.floor(getUnixTime(sub(new Date(), { days: 7 })) * 1000);
+  const { data: appUsageReport, isLoading } = useQueryAppUsage({
+    start: 0,
+    end: sevenDaysAgo,
+    interval: ScreenTimeInterval.INTERVAL_DAILY,
+  });
+
+  const { data: totalScreenTime } = useQueryTotalScreenTime();
+
+  const hourlyUsage = useMemo(() => {
+    return appUsageReport?.hourlyUsage.map(a => {
+      return {
+        ms: a.screenTime,
+        hour: convertMsToHour(a.screenTime),
+        date: format(new Date(a.hourlyMark), 'dd/MM'),
+      };
+    });
+  }, [appUsageReport]);
+
+  const data: LineChartData = {
+    labels: hourlyUsage?.map(h => h.date) as string[],
+    datasets: [
+      {
+        data: hourlyUsage?.map(h => h.ms) as number[],
+        color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`, // optional
+        strokeWidth: 2, // optional
+      },
+    ],
+  };
 
   const menu: Menu[] = [
     {
@@ -66,7 +102,7 @@ const DashboardScreen = () => {
             <View className="flex-1">
               <Text className="font-medium text-primary">Screen time kamu hari ini!</Text>
               <Text className="text-[9px] my-1">{new Date().toLocaleDateString()}</Text>
-              <Text className="text-xl font-medium">4h 30m</Text>
+              <Text className="text-xl font-medium">{convertMsToTime(totalScreenTime || 0)}</Text>
             </View>
             <View className="flex-1 items-end">
               <TouchableOpacity
@@ -80,8 +116,73 @@ const DashboardScreen = () => {
             </View>
           </View>
 
-          <View className="items-center border-t border-primary">
-            <DummyChart />
+          <View className="border-t border-primary pt-4">
+            {!isLoading && (
+              <LineChart
+                formatYLabel={value => {
+                  const hour = convertMsToHour(Number(value));
+                  if (hour === 0) {
+                    return convertMsToTime(Number(value));
+                  }
+                  return hour + ' h';
+                }}
+                data={data}
+                width={Dimensions.get('window').width - 64} // from react-native
+                height={180}
+                yAxisInterval={1} // optional, defaults to 1
+                renderDotContent={({ x, y, index }) => {
+                  const currentData = data.datasets[0].data[index];
+                  const hour = convertMsToHour(Number(currentData));
+                  let display = '';
+                  if (hour === 0) {
+                    display = convertMsToTime(Number(currentData));
+                  }
+                  display = hour + ' h';
+                  const isDanger = hour >= 9;
+                  return (
+                    <View
+                      key={index}
+                      className={cn('items-center absolute w-8', {
+                        ' ': !isDanger,
+                      })}
+                      style={{
+                        top: y - 14, // <--- relevant to height / width (
+                        left: x - 7, // <--- width / 2
+                      }}>
+                      <View className="bg-transparent">
+                        {isDanger ? (
+                          <DangerIcon />
+                        ) : (
+                          <Text className="font-semibold text-primary" style={{ fontSize: 10 }}>
+                            {display}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                }}
+                chartConfig={{
+                  backgroundGradientFrom: '#fff',
+                  backgroundGradientTo: '#fff',
+                  decimalPlaces: 0, // optional, defaults to 2dp
+                  color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {
+                    borderRadius: 32,
+                  },
+                  propsForDots: {
+                    r: '6',
+                  },
+                  propsForHorizontalLabels: {
+                    fontSize: 8,
+                  },
+                  propsForVerticalLabels: {
+                    fontSize: 8,
+                  },
+                }}
+                bezier
+              />
+            )}
           </View>
         </View>
       </View>

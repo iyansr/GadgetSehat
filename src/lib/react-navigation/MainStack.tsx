@@ -19,6 +19,10 @@ import PhonePositionScreen from '@gs/modules/phone-position/screen/PhonePosition
 import ScreenTimeIntro from '@gs/modules/screen-time/screens/ScreenTimeIntro';
 import ScreenTime from '@gs/modules/screen-time/screens/ScreenTime';
 import HealthReportScreen from '@gs/modules/health-report/screen/HealthReportScreen';
+import { useEffect } from 'react';
+import { AppState, Platform } from 'react-native';
+import type { AppStateStatus } from 'react-native';
+import { focusManager } from '@tanstack/react-query';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -45,6 +49,18 @@ const MainStack = () => {
     headerShadowVisible: false,
     headerLeft: HeaderBack,
   };
+
+  function onAppStateChange(status: AppStateStatus) {
+    if (Platform.OS !== 'web') {
+      focusManager.setFocused(status === 'active');
+    }
+  }
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', onAppStateChange);
+
+    return () => subscription.remove();
+  }, []);
 
   return (
     <Stack.Navigator

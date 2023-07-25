@@ -1,6 +1,7 @@
 package com.gadgetsehat
 
 import android.app.AppOpsManager
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -20,6 +21,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import java.io.ByteArrayOutputStream
 import java.util.Base64
+import java.util.Calendar
 import java.util.TreeMap
 import kotlin.Comparator
 
@@ -28,28 +30,56 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
     override fun getName(): String {
         return "ScreenTimeModule"
     }
-
     data class AppUsage(val appName: String, val packageName: String, val usageTime: Long, val icon: Drawable?)
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    @ReactMethod
+    fun getTotalScreenTime(start: Double, end: Double, promise: Promise) {
+        try {
+            val usageStatsManager = reactContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
+            val startTime = if(start > 0) start.toLong() else System.currentTimeMillis()
+            val endTime = if(end > 0) end.toLong() else startTime - 1000 * 60 * 60 * 24
+
+            val usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, endTime, startTime)
+
+            var totalScreenTime: Long = 0
+
+            if (usageStatsList != null) {
+                for (usageStats in usageStatsList) {
+                    val totalTimeInForeground = usageStats.totalTimeVisible
+                    totalScreenTime += totalTimeInForeground
+                }
+            }
+
+            promise.resolve(totalScreenTime.toDouble())
+        } catch (e : Exception) {
+            promise.reject("Error", e)
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @ReactMethod
-    fun getScreenTime(promise: Promise) {
+    fun getScreenTime(interval: Double, start: Double, end: Double, promise: Promise) {
        try {
            val usageStatsManager = reactContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
            val packageManager = reactContext.packageManager
-           val endTime = System.currentTimeMillis()
-           val startTime = endTime - 1000 * 60 * 60 * 24 // Get stats from the last 24 hours
+           val startTime = if(start > 0) start.toLong() else System.currentTimeMillis()
+           val endTime = if(end > 0) end.toLong() else startTime - 1000 * 60 * 60 * 24
 
-           val usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
+           val usageStatsList = usageStatsManager.queryUsageStats(interval.toInt(), endTime, startTime)
 
            val appUsageMap = TreeMap<String, Long>(UsageComparator())
-           var totalScreenTime: Long = 0
+           val hourlyScreenTimeMap = TreeMap<Long, Long>()
+           var totalScreenTime = 0L
 
            if (usageStatsList != null) {
                for (usageStats in usageStatsList) {
                    val packageName = usageStats.packageName
                    val totalTimeInForeground = usageStats.totalTimeInForeground
 
+                   val hourlyMark = startTime + ((usageStats.firstTimeStamp - startTime) / (1000 * 60 * 60)) * (1000 * 60 * 60)
+                   hourlyScreenTimeMap[hourlyMark] = hourlyScreenTimeMap.getOrDefault(hourlyMark, 0) + totalTimeInForeground
                    appUsageMap[packageName] = totalTimeInForeground
                    totalScreenTime += totalTimeInForeground
                }
@@ -66,7 +96,6 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
                appUsageList.add(appUsage)
            }
 
-           // Emit the event to React Native
            val appUsageArray = Arguments.createArray()
            for (appUsage in appUsageList) {
                val appUsageObject = Arguments.createMap().apply {
@@ -83,10 +112,31 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
                appUsageArray.pushMap(appUsageObject)
            }
 
+           var hourlyStartTime = startTime
+           while (hourlyStartTime < endTime) {
+               if(!hourlyScreenTimeMap.containsKey(hourlyStartTime)) {
+                   hourlyScreenTimeMap[hourlyStartTime] = 0
+               }
+               hourlyStartTime += 1000 * 60 * 60
+           }
+
+           val screenTimeArray = Arguments.createArray()
+           for((hourlyMark, screenTime) in hourlyScreenTimeMap) {
+               val screenTimeObj = Arguments.createMap().apply {
+                   putDouble("hourlyMark", hourlyMark.toDouble())
+                   putDouble("screenTime", screenTime.toDouble())
+               }
+
+               screenTimeArray.pushMap(screenTimeObj)
+           }
+
            val resultData = Arguments.createMap().apply {
                putDouble("totalScreenTime", totalScreenTime.toDouble())
                putArray("appUsageList", appUsageArray)
+               putArray("hourlyUsage", screenTimeArray)
            }
+
+
 
            promise.resolve(resultData)
        } catch (e: Exception) {
@@ -106,8 +156,10 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
 
     private fun getAppIcon(packageName: String, packageManager: PackageManager): Drawable? {
         return try {
-            val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-            packageManager.getApplicationIcon(applicationInfo)
+            val appIcon = packageManager.getApplicationIcon(packageName)
+            val defaultIcon = packageManager.defaultActivityIcon
+
+             if(appIcon is Drawable) appIcon else defaultIcon
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
             null
