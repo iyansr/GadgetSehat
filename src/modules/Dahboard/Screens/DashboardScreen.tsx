@@ -116,7 +116,7 @@ const DashboardScreen = () => {
             </View>
           </View>
 
-          <View className="border-t border-primary pt-4">
+          <View className="border-t border-primary pt-4" style={{ height: 180 }}>
             {!isLoading && (
               <LineChart
                 formatYLabel={value => {
@@ -128,7 +128,7 @@ const DashboardScreen = () => {
                 }}
                 data={data}
                 width={Dimensions.get('window').width - 64} // from react-native
-                height={180}
+                height={170}
                 yAxisInterval={1} // optional, defaults to 1
                 renderDotContent={({ x, y, index }) => {
                   const currentData = data.datasets[0].data[index];

@@ -1,15 +1,20 @@
-import { Image, ScrollView, Switch, View } from 'react-native';
-import React from 'react';
+import { Dimensions, Image, ScrollView, Switch, View } from 'react-native';
+import React, { useMemo } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
-import { cn, convertMsToTime } from '@gs/lib/utils';
+import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
 import DummyChartHealth from '@gs/assets/svg/DummyChartHealth';
 import ArrowDownIcon from '@gs/assets/svg/ArrowDownIcon';
 import useQueryAppUsage from '@gs/modules/shared/hooks/useQueryAppUsage';
-import { getUnixTime, startOfDay } from 'date-fns';
+import { format, getUnixTime, sub } from 'date-fns';
+import { ScreenTimeInterval } from '@gs/lib/native/screentime/screentime';
+import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
+import { LineChart } from 'react-native-chart-kit';
+import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
+import DangerIcon from '@gs/assets/svg/DangerIcon';
 
 const screentimeReport = [
   {
@@ -27,11 +32,38 @@ const screentimeReport = [
 ];
 
 const HealthReportScreen = () => {
-  const startOfDayInMilliseconds = getUnixTime(startOfDay(new Date()));
-  const { data: appUsageReport } = useQueryAppUsage({ start: 0, end: startOfDayInMilliseconds });
+  const sevenDaysAgo = Math.floor(getUnixTime(sub(new Date(), { days: 7 })) * 1000);
+  const { data: appUsageReport, isLoading } = useQueryAppUsage({
+    start: 0,
+    end: sevenDaysAgo,
+    interval: ScreenTimeInterval.INTERVAL_DAILY,
+  });
+
+  const { data: totalScreenTime } = useQueryTotalScreenTime();
 
   const [value, setValue] = React.useState(false);
   const [value1, setValue1] = React.useState(false);
+
+  const hourlyUsage = useMemo(() => {
+    return appUsageReport?.hourlyUsage.map(a => {
+      return {
+        ms: a.screenTime,
+        hour: convertMsToHour(a.screenTime),
+        date: format(new Date(a.hourlyMark), 'dd/MM'),
+      };
+    });
+  }, [appUsageReport]);
+
+  const data: LineChartData = {
+    labels: hourlyUsage?.map(h => h.date) as string[],
+    datasets: [
+      {
+        data: hourlyUsage?.map(h => h.ms) as number[],
+        color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`, // optional
+        strokeWidth: 2, // optional
+      },
+    ],
+  };
 
   return (
     <ScrollView scrollIndicatorInsets={{ right: 1 }}>
@@ -82,7 +114,7 @@ const HealthReportScreen = () => {
               </View>
               <View className="relative px-10 pl-16 bg-[#E4F3FF] py-3 rounded-lg">
                 <Text className="font-semibold text-xl">
-                  {convertMsToTime(appUsageReport?.totalScreenTime ?? 0)}
+                  {convertMsToTime(totalScreenTime ?? 0)}
                 </Text>
               </View>
             </View>
@@ -93,8 +125,78 @@ const HealthReportScreen = () => {
             <Text className="font-semibold text-xs text-red-500">Peak usage: 08am - 12pm</Text>
           </View>
 
-          <View className="items-center border-t-primaryLight border-t w-full mt-5 pt-4">
+          {/* <View className="items-center border-t-primaryLight border-t w-full mt-5 pt-4">
             <DummyChartHealth />
+          </View> */}
+          <View
+            className="items-center border-t-primaryLight border-t w-full mt-5 pt-4"
+            style={{ height: 180 }}>
+            {!isLoading && (
+              <LineChart
+                formatYLabel={value => {
+                  const hour = convertMsToHour(Number(value));
+                  if (hour === 0) {
+                    return convertMsToTime(Number(value));
+                  }
+                  return hour + ' h';
+                }}
+                data={data}
+                width={Dimensions.get('window').width - 40} // from react-native
+                height={170}
+                yAxisInterval={1} // optional, defaults to 1
+                renderDotContent={({ x, y, index }) => {
+                  const currentData = data.datasets[0].data[index];
+                  const hour = convertMsToHour(Number(currentData));
+                  let display = '';
+                  if (hour === 0) {
+                    display = convertMsToTime(Number(currentData));
+                  }
+                  display = hour + ' h';
+                  const isDanger = hour >= 9;
+                  return (
+                    <View
+                      key={index}
+                      className={cn('items-center absolute w-8', {
+                        ' ': !isDanger,
+                      })}
+                      style={{
+                        top: y - 14, // <--- relevant to height / width (
+                        left: x - 7, // <--- width / 2
+                      }}>
+                      <View className="bg-transparent">
+                        {isDanger ? (
+                          <DangerIcon />
+                        ) : (
+                          <Text className="font-semibold text-primary" style={{ fontSize: 10 }}>
+                            {display}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                }}
+                chartConfig={{
+                  backgroundGradientFrom: '#fff',
+                  backgroundGradientTo: '#fff',
+                  decimalPlaces: 0, // optional, defaults to 2dp
+                  color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {
+                    borderRadius: 32,
+                  },
+                  propsForDots: {
+                    r: '6',
+                  },
+                  propsForHorizontalLabels: {
+                    fontSize: 8,
+                  },
+                  propsForVerticalLabels: {
+                    fontSize: 8,
+                  },
+                }}
+                bezier
+              />
+            )}
           </View>
 
           <View className="flex-row items-center space-x-2 px-4 mt-4">
