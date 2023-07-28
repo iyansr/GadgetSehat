@@ -18,6 +18,7 @@ class ColoLoco {
     List<NativeModule> modules = new ArrayList<>();
     // This list is auto-generated. Do not edit manually.
 
+    modules.add(new AppsOnTopModule(reactContext));
     modules.add(new GyroCheckerModule(reactContext));
     modules.add(new ScreenTimeModule(reactContext));
     modules.add(new ScreenTimeV2Module(reactContext));

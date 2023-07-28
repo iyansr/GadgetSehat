@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresApi
@@ -233,7 +234,7 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
 
     @ReactMethod
     fun openUsageSettings() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, Uri.parse("package:"+reactContext.packageName))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         val packageManager = reactContext.packageManager
         if (intent.resolveActivity(packageManager) != null) {

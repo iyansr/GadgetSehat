@@ -1,11 +1,14 @@
-import { Image, Pressable, ScrollView, View } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import { Image, PermissionsAndroid, Pressable, ScrollView, View } from 'react-native';
+import React from 'react';
 import ReactNativeModal from 'react-native-modal';
 import Text from '@gs/components/basic/Text';
 import MainButton from '@gs/components/ui/MainButton';
 import CheckMark from '@gs/assets/svg/CheckMark';
 import ScreenTimeModule from '@gs/lib/native/screentime/screentime';
 import useAppUsagePermission from '@gs/modules/shared/hooks/useAppUsagePermission';
+import useAppsOnTopPermission from '@gs/modules/shared/hooks/useAppsOnTopPermission';
+import { openAppsOnTopSettings } from '@gs/lib/native/apps-on-top/appsOnTop';
+import useNotificationPermission from '@gs/modules/shared/hooks/useNotificationPermission';
 
 const Item = ({
   onPress,
@@ -34,19 +37,12 @@ type Props = {
 };
 
 const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
-  const { data: api } = useAppUsagePermission();
-
-  const [requests, setRequests] = useState({
-    appsOnTop: false,
-    notification: false,
-  });
-
-  const handleRequest = useCallback((key: keyof typeof requests) => {
-    setRequests(prev => ({ ...prev, [key]: true }));
-  }, []);
+  const { data: api = false } = useAppUsagePermission();
+  const { data: appsOnTop = false } = useAppsOnTopPermission();
+  const { data: notif = false } = useNotificationPermission();
 
   const handlePressNext = () => {
-    const isCompleteRequest = Object.values(requests).every(request => request) && api;
+    const isCompleteRequest = api && appsOnTop && notif;
     onPressNext?.(isCompleteRequest);
   };
 
@@ -78,14 +74,30 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
               enabled={!!api}
             />
             <Item
-              onPress={() => handleRequest('appsOnTop')}
+              onPress={() => {
+                if (!appsOnTop) {
+                  openAppsOnTopSettings();
+                }
+              }}
               text="Atur Apps on Top"
-              enabled={requests.appsOnTop}
+              enabled={appsOnTop}
             />
             <Item
-              onPress={() => handleRequest('notification')}
+              onPress={async () => {
+                if (!notif) {
+                  await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+                    {
+                      message:
+                        'Gadget Sehat membutuhkan beberapa periijinan agar fitur Gadget Sehat dapat berfungsi maksimal Atur perijinan sebelum melanjutkan',
+                      title: 'Berikan Akses Notifikasi',
+                      buttonPositive: 'OK',
+                    },
+                  );
+                }
+              }}
               text="Atur Perijinan Notifikasi"
-              enabled={requests.notification}
+              enabled={notif}
             />
           </View>
 
