@@ -43,7 +43,6 @@ const Item = ({ item }: { item: Menu }) => {
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
-  // const sevenDaysAgo = Math.floor(getUnixTime(sub(new Date(), { days: 7 })) * 1000);
   const { data: totalScreenTime, isLoading: loadingScreenTime } = useQueryTotalScreenTime();
   const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
 
