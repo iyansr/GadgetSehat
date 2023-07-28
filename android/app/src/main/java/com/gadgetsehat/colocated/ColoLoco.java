@@ -20,6 +20,7 @@ class ColoLoco {
 
     modules.add(new GyroCheckerModule(reactContext));
     modules.add(new ScreenTimeModule(reactContext));
+    modules.add(new ScreenTimeV2Module(reactContext));
 
 
     return modules;

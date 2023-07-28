@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import { View, ScrollView, Image, Dimensions } from 'react-native';
-import React, { useMemo } from 'react';
+import React from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import DoubleArrowIcon from '@gs/assets/svg/DoubleArrowIcon';
@@ -9,13 +9,12 @@ import Articles from '../Components/Articles';
 import DashboardHeader from '../Components/DashboardHeader';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import { LineChart } from 'react-native-chart-kit';
-import useQueryAppUsage from '@gs/modules/shared/hooks/useQueryAppUsage';
-import { format, getUnixTime, sub } from 'date-fns';
-import { ScreenTimeInterval } from '@gs/lib/native/screentime/screentime';
+import { format, fromUnixTime } from 'date-fns';
 import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 import DangerIcon from '@gs/assets/svg/DangerIcon';
 import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
+import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
 
 type Menu = {
   title: string;
@@ -44,30 +43,19 @@ const Item = ({ item }: { item: Menu }) => {
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
-  const sevenDaysAgo = Math.floor(getUnixTime(sub(new Date(), { days: 7 })) * 1000);
-  const { data: appUsageReport, isLoading } = useQueryAppUsage({
-    start: 0,
-    end: sevenDaysAgo,
-    interval: ScreenTimeInterval.INTERVAL_DAILY,
-  });
+  // const sevenDaysAgo = Math.floor(getUnixTime(sub(new Date(), { days: 7 })) * 1000);
+  const { data: totalScreenTime, isLoading: loadingScreenTime } = useQueryTotalScreenTime();
+  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
 
-  const { data: totalScreenTime } = useQueryTotalScreenTime();
-
-  const hourlyUsage = useMemo(() => {
-    return appUsageReport?.hourlyUsage.map(a => {
-      return {
-        ms: a.screenTime,
-        hour: convertMsToHour(a.screenTime),
-        date: format(new Date(a.hourlyMark), 'dd/MM'),
-      };
-    });
-  }, [appUsageReport]);
+  const isLoading = loadingScreenTime || loadingChart;
 
   const data: LineChartData = {
-    labels: hourlyUsage?.map(h => h.date) as string[],
+    labels: chartData?.map(c =>
+      format(fromUnixTime(Math.floor(c.end / 1000)), 'dd/MM'),
+    ) as string[],
     datasets: [
       {
-        data: hourlyUsage?.map(h => h.ms) as number[],
+        data: chartData?.map(c => c.timeSpent) as number[], //hourlyUsage?.map(h => h.ms) as number[],
         color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`, // optional
         strokeWidth: 2, // optional
       },

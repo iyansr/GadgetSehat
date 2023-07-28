@@ -41,8 +41,6 @@ const EditProfileScreen = () => {
   const { data: provinces } = useQueryProvinces();
   const { data: cities } = useQueryCities(selectedProvinceId);
 
-  console.log(selectedProvinceId);
-
   const { control, handleSubmit, setValue } = useForm<UserSchema>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: {

@@ -2,7 +2,6 @@ package com.gadgetsehat
 
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
-import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -21,7 +20,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import java.io.ByteArrayOutputStream
 import java.util.Base64
-import java.util.Calendar
 import java.util.TreeMap
 import kotlin.Comparator
 
@@ -31,6 +29,51 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
         return "ScreenTimeModule"
     }
     data class AppUsage(val appName: String, val packageName: String, val usageTime: Long, val icon: Drawable?)
+    @ReactMethod
+    fun getTimeSpent(start: Double, end: Double, promise: Promise) {
+        try {
+//            val end = System.currentTimeMillis()
+//            val start = end - 1000 * 60 * 60 * 24 // one day ago
+
+            val startTime = if(start > 0) start.toLong() else System.currentTimeMillis()
+            val endTime = if(end > 0) end.toLong() else startTime - 1000 * 60 * 60 * 24
+
+            val usageStatsManager = reactContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val events = usageStatsManager.queryEvents(endTime, startTime)
+            val eventMap = mutableMapOf<String, MutableList<UsageEvents.Event>>()
+            while (events.hasNextEvent()) {
+                val event = UsageEvents.Event()
+                events.getNextEvent(event)
+                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND || event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
+                    eventMap.getOrPut(event.packageName) { mutableListOf() }.add(event)
+                }
+            }
+            val screenTimeMap = mutableMapOf<String, Long>()
+            for ((packageName, eventList) in eventMap) {
+                var screenTime = 0L
+                var lastEvent: UsageEvents.Event? = null
+                for (event in eventList) {
+                    if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        lastEvent = event
+                    } else if (event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND && lastEvent != null) {
+                        screenTime += event.timeStamp - lastEvent.timeStamp
+                        lastEvent = null
+                    }
+                }
+                screenTimeMap[packageName] = screenTime
+            }
+
+            var timeSpent = 0L
+
+            for ((_, duration) in screenTimeMap){
+              timeSpent += duration
+            }
+            promise.resolve(timeSpent.toDouble())
+        } catch (e: Exception) {
+            promise.reject("Error: getTimeSpent", e)
+        }
+
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @ReactMethod
@@ -41,17 +84,14 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
             val startTime = if(start > 0) start.toLong() else System.currentTimeMillis()
             val endTime = if(end > 0) end.toLong() else startTime - 1000 * 60 * 60 * 24
 
-            val usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, endTime, startTime)
+            val usageStatsList = usageStatsManager.queryAndAggregateUsageStats(endTime, startTime)
 
             var totalScreenTime: Long = 0
 
-            if (usageStatsList != null) {
-                for (usageStats in usageStatsList) {
-                    val totalTimeInForeground = usageStats.totalTimeVisible
-                    totalScreenTime += totalTimeInForeground
-                }
+            for ((_, usageStats) in usageStatsList) {
+                val totalTimeInForeground = usageStats.totalTimeVisible
+                totalScreenTime += totalTimeInForeground
             }
-
             promise.resolve(totalScreenTime.toDouble())
         } catch (e : Exception) {
             promise.reject("Error", e)
@@ -77,7 +117,6 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
                for (usageStats in usageStatsList) {
                    val packageName = usageStats.packageName
                    val totalTimeInForeground = usageStats.totalTimeInForeground
-
                    val hourlyMark = startTime + ((usageStats.firstTimeStamp - startTime) / (1000 * 60 * 60)) * (1000 * 60 * 60)
                    hourlyScreenTimeMap[hourlyMark] = hourlyScreenTimeMap.getOrDefault(hourlyMark, 0) + totalTimeInForeground
                    appUsageMap[packageName] = totalTimeInForeground

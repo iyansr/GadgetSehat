@@ -52,4 +52,8 @@ export const getTotalScreenTime: ScreenTimeModuleType['getTotalScreenTime'] = as
   return ScreenTimeModule?.getTotalScreenTime(startUnix, endUnix);
 };
 
+export const getTimeSpent = async (startUnix = 0, endUnix = 0) => {
+  return ScreenTimeModule?.getTimeSpent(startUnix, endUnix);
+};
+
 export default ScreenTimeModule as ScreenTimeModuleType;
