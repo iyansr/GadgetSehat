@@ -11,6 +11,7 @@ export type StackParamList = {
   PhonePositionIntro: undefined;
   PhonePositionScreen: undefined;
   ScreenTimeIntro: undefined;
+  HealthHistory: undefined;
   ScreenTime: undefined;
   HealthReportScreen: undefined;
 };

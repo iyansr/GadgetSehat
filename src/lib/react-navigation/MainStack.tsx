@@ -23,6 +23,7 @@ import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import type { AppStateStatus } from 'react-native';
 import { focusManager } from '@tanstack/react-query';
+import HealthHistory from '@gs/modules/health-report/screen/HealthHistory';
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -119,6 +120,11 @@ const MainStack = () => {
         name="HealthReportScreen"
         component={HealthReportScreen}
         options={{ title: 'Report Sehat Kamu' }}
+      />
+      <Stack.Screen
+        name="HealthHistory"
+        component={HealthHistory}
+        options={{ title: 'Riwayat Level Kecanduan' }}
       />
     </Stack.Navigator>
   );

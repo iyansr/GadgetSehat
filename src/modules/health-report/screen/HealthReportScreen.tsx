@@ -12,6 +12,8 @@ import { format, getUnixTime, parse, startOfDay } from 'date-fns';
 import { ScreenTimeInterval } from '@gs/lib/native/screentime/screentime';
 import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
 import CalendarModal from '../components/CalendarModal';
+import HealthReportChart from '../components/HealthReportChart';
+import useNavigation from '@gs/lib/react-navigation/useNavigation';
 
 const screentimeReport = [
   {
@@ -30,6 +32,7 @@ const screentimeReport = [
 
 const HealthReportScreen = () => {
   const startToday = Math.floor(getUnixTime(startOfDay(new Date())) * 1000);
+  const navigation = useNavigation();
 
   const [value, setValue] = React.useState(false);
   const [value1, setValue1] = React.useState(false);
@@ -78,12 +81,18 @@ const HealthReportScreen = () => {
         </View>
 
         <View className="px-4 mt-6">
-          <View className="bg-primaryLight p-5 rounded-lg">
+          <View className="bg-primaryLight p-5 rounded-lg items-center">
             <Text className="text-center font-bold text-base">Level Kecanduan Kamu</Text>
 
-            <View className="flex-row justify-center mt-7">
+            <View className="mt-6">
               <LevelsBadge level="good" size="large" text="Sehat" />
             </View>
+            <TouchableOpacity
+              className="mt-4"
+              hitSlop={8}
+              onPress={() => navigation.navigate('HealthHistory')}>
+              <Text className="text-xs font-bold text-primary">Lihat detail riwayat</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View className="px-4 mt-4">
@@ -108,9 +117,7 @@ const HealthReportScreen = () => {
               <Text className="font-semibold text-xs text-red-500">Peak usage: 08am - 12pm</Text>
             </View>
 
-            {/* <View className="items-center border-t-primaryLight border-t w-full mt-5 pt-4">
-            <DummyChartHealth />
-          </View> */}
+            <HealthReportChart />
 
             <View className="flex-row items-center space-x-2 px-4 mt-4">
               {screentimeReport.map((item, index) => (

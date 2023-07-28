@@ -1,9 +1,15 @@
 import * as React from 'react';
 import Svg, { SvgProps, Path } from 'react-native-svg';
-const ArrowDownIcon = (props: SvgProps) => (
-  <Svg width={26} height={25} viewBox="0 0 25 25" fill="none" {...props}>
+const ArrowUpIcon = (props: SvgProps) => (
+  <Svg
+    width={26}
+    height={25}
+    viewBox="0 0 25 25"
+    fill="none"
+    {...props}
+    className="rotate-180 transform">
     <Path
-      stroke="#DB4951"
+      stroke="#189741"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeMiterlimit={10}
@@ -12,4 +18,4 @@ const ArrowDownIcon = (props: SvgProps) => (
     />
   </Svg>
 );
-export default ArrowDownIcon;
+export default ArrowUpIcon;
