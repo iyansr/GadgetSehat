@@ -49,12 +49,12 @@ const DashboardScreen = () => {
   const isLoading = loadingScreenTime || loadingChart;
 
   const data: LineChartData = {
-    labels: chartData?.map(c =>
-      format(fromUnixTime(Math.floor(c.end / 1000)), 'dd/MM'),
-    ) as string[],
+    labels: chartData
+      ?.map(c => format(fromUnixTime(Math.floor(c.end / 1000)), 'dd/MM'))
+      ?.reverse() as string[],
     datasets: [
       {
-        data: chartData?.map(c => c.timeSpent) as number[], //hourlyUsage?.map(h => h.ms) as number[],
+        data: chartData?.map(c => c.timeSpent)?.reverse() as number[], //hourlyUsage?.map(h => h.ms) as number[],
         color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`, // optional
         strokeWidth: 2, // optional
       },

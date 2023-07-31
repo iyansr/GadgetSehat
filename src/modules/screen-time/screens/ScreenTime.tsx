@@ -1,11 +1,11 @@
-import { View, ScrollView, Switch } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import React from 'react';
 import Text from '@gs/components/basic/Text';
-import DummyChart from '@gs/assets/svg/DummyChart';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
+import ScreenTimeChart from '../components/ScreenTimeChart';
+import Toggle from '@gs/components/basic/Toggle';
 
 const ScreenTime = () => {
-  const [value, setValue] = React.useState(false);
   const [value1, setValue1] = React.useState(false);
 
   return (
@@ -37,28 +37,34 @@ const ScreenTime = () => {
           </View>
 
           <View className="items-center border-t border-primary">
-            <DummyChart />
+            {/* <DummyChart /> */}
+            <ScreenTimeChart />
           </View>
         </View>
         <View className="p-4 border border-primary rounded-2xl">
           <View>
             <Text className="text-lg leading-6  font-medium">Aktifkan fitur Screen Time</Text>
             <View className="flex items-center flex-row mt-2">
-              <Text className="text-xs flex-1">
-                Nyalakan fitur screen time untuk mengetahui berapa lama kamu membuka gadget dalam
-                sehari
-              </Text>
-              <Switch value={value} onValueChange={setValue} />
+              <View className="flex-1 mr-2">
+                <Text className="text-xs">
+                  Nyalakan fitur screen time untuk mengetahui berapa lama kamu membuka gadget dalam
+                  sehari
+                </Text>
+              </View>
+
+              <Toggle switchOn={true} />
             </View>
           </View>
           <View className="mt-2">
-            <Text className="text-lg leading-6  font-medium">Aktifkan Peringatan Batas Waktu</Text>
+            <Text className="text-lg leading-6 font-medium">Aktifkan Peringatan Batas Waktu</Text>
             <View className="flex items-center flex-row mt-2">
-              <Text className="text-xs flex-1">
-                Nyalakan fitur peringatan batas waktu untuk mengingatkan kamu agar tidak memakai
-                gadget secara berlebihan!
-              </Text>
-              <Switch value={value1} onValueChange={setValue1} />
+              <View className="flex-1 mr-2">
+                <Text className="text-xs ">
+                  Nyalakan fitur peringatan batas waktu untuk mengingatkan kamu agar tidak memakai
+                  gadget secara berlebihan!
+                </Text>
+              </View>
+              <Toggle switchOn={value1} onPress={() => setValue1(!value1)} />
             </View>
           </View>
         </View>

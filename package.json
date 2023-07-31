@@ -24,6 +24,7 @@
     "@tanstack/react-query": "^4.29.25",
     "clsx": "^1.2.1",
     "date-fns": "^2.30.0",
+    "expo": "^49.0.0",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-hook-form": "^7.45.1",
@@ -40,6 +41,7 @@
     "react-native-screens": "^3.22.1",
     "react-native-sensors": "^7.3.6",
     "react-native-svg": "^13.10.0",
+    "react-native-switch-toggle": "^2.2.1",
     "tailwind-merge": "^1.13.2",
     "yarn": "^1.22.19",
     "zod": "^3.21.4"

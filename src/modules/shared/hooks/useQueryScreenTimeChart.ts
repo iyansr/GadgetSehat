@@ -4,7 +4,7 @@ import { getUnixTime, sub } from 'date-fns';
 
 const useQueryScreenTimeChart = () => {
   return useQuery({
-    queryKey: ['Screen-time-chart-data'],
+    queryKey: ['screen-time-chart-data'],
     queryFn: async () => {
       const result = await Promise.all(
         [...new Array(7)].map(async (_, index) => {

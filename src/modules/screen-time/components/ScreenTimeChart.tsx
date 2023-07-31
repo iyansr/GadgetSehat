@@ -9,7 +9,7 @@ import { format, fromUnixTime } from 'date-fns';
 import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 
-const HealthReportChart = () => {
+const ScreenTimeChart = () => {
   const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
 
   const isLoading = loadingChart;
@@ -28,9 +28,7 @@ const HealthReportChart = () => {
   };
 
   return (
-    <View
-      className="items-center border-t-primaryLight border-t w-full mt-5 pt-4"
-      style={{ height: 180 }}>
+    <View className="items-center w-full mt-5 pt-4" style={{ height: 180 }}>
       {!isLoading && (
         <LineChart
           formatYLabel={value => {
@@ -41,7 +39,7 @@ const HealthReportChart = () => {
             return hour + ' h';
           }}
           data={data}
-          width={Dimensions.get('window').width - 40} // from react-native
+          width={Dimensions.get('window').width - 64} // from react-native
           height={170}
           yAxisInterval={1} // optional, defaults to 1
           renderDotContent={({ x, y, index }) => {
@@ -101,4 +99,4 @@ const HealthReportChart = () => {
   );
 };
 
-export default HealthReportChart;
+export default ScreenTimeChart;

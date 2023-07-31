@@ -1,10 +1,11 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-        <item name="colorPrimary">#1C74BB</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="colorPrimary">@color/primary</item>
     </style>
 
     <!-- BootTheme should inherit from Theme.SplashScreen -->
