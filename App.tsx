@@ -6,6 +6,7 @@ import MainStack from '@gs/lib/react-navigation/MainStack';
 import '@gs/lib/google/googleSignIn';
 import AuthProvider from '@gs/modules/auth/context/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import RNBootSplash from 'react-native-bootsplash';
 
 if (__DEV__) {
   import('@gs/lib/reactotron').then(() => console.log('REACTOTRON!!'));
@@ -17,6 +18,9 @@ const queryClient = new QueryClient();
 const App = () => {
   return (
     <NavigationContainer
+      onReady={() => {
+        RNBootSplash.hide({ fade: true });
+      }}
       theme={{
         ...DefaultTheme,
         colors: {
