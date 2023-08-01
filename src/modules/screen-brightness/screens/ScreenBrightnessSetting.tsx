@@ -1,14 +1,42 @@
 import { View, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import BrightnessIcon from '@gs/assets/svg/BrightnessIcon';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import Slider from '@react-native-community/slider';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
+import useBrightness from '../hooks/useBrightness';
 
 const ScreenBrightnessSetting = () => {
-  const [level, setLevel] = useState(25);
+  const { brightness, getBrightness, setBrightnessAsync, setSystemBrightness } = useBrightness();
+
+  const level = useMemo(() => {
+    return Math.floor(brightness * 100);
+  }, [brightness]);
+
+  const getLevel = () => {
+    if (level >= 0 && level <= 40) {
+      return 'normal';
+    } else if (level >= 40 && level <= 50) {
+      return 'good';
+    } else if (level >= 40 && level <= 100) {
+      return 'danger';
+    }
+    return 'normal';
+  };
+
+  const label = {
+    good: 'Sehat',
+    danger: 'Berbahaya',
+    normal: 'Normal',
+  };
+
+  const color = {
+    good: '#189741',
+    danger: '#CD202D',
+    normal: '#02ABEF',
+  };
 
   return (
     <ScrollView>
@@ -17,7 +45,7 @@ const ScreenBrightnessSetting = () => {
           size={150}
           width={25}
           fill={level}
-          tintColor="#189741"
+          tintColor={color[getLevel()]}
           backgroundColor="#E4F3FF"
           arcSweepAngle={360}
           rotation={360}>
@@ -28,7 +56,9 @@ const ScreenBrightnessSetting = () => {
           )}
         </AnimatedCircularProgress>
         <View className="flex-row justify-center mt-6">
-          <TouchableOpacity className="bg-white px-4 py-2 rounded-xl flex-row items-center">
+          <TouchableOpacity
+            className="bg-white px-4 py-2 rounded-xl flex-row items-center"
+            onPress={getBrightness}>
             <BrightnessIcon color="#1C74BB" width={28} height={28} />
             <Text className="text-lg text-primary font-semibold ml-4">Cek Ulang</Text>
           </TouchableOpacity>
@@ -38,7 +68,7 @@ const ScreenBrightnessSetting = () => {
         <Text className="font-semibold text-center">Pencahayaan Gadget Kamu</Text>
 
         <View className="flex-row justify-center">
-          <LevelsBadge level="good" text="Sehat" size="large" />
+          <LevelsBadge level={getLevel()} text={label[getLevel()]} size="large" />
         </View>
 
         <View className="border border-primary rounded-2xl p-6">
@@ -52,12 +82,13 @@ const ScreenBrightnessSetting = () => {
                 // eslint-disable-next-line react-native/no-inline-styles
                 style={{ width: '100%', height: 50 }}
                 minimumValue={0}
-                maximumValue={100}
-                value={level}
+                maximumValue={1}
+                step={0.001}
+                value={brightness}
                 minimumTrackTintColor="#1C74BB"
                 maximumTrackTintColor="#1C74BB"
                 thumbTintColor="#1C74BB"
-                onValueChange={value => setLevel(value)}
+                onSlidingComplete={setBrightnessAsync}
               />
             </View>
             <View>
@@ -65,7 +96,9 @@ const ScreenBrightnessSetting = () => {
             </View>
           </View>
 
-          <TouchableOpacity className="bg-[#ECF7F9] px-4 py-2 rounded-full flex-row justify-center mt-2 border border-primary">
+          <TouchableOpacity
+            onPress={() => setSystemBrightness(brightness)}
+            className="bg-[#ECF7F9] px-4 py-2 rounded-full flex-row justify-center mt-2 border border-primary">
             <Text className="text-center text-primary font-semibold">Atur Sekarang</Text>
           </TouchableOpacity>
         </View>
