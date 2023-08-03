@@ -96,10 +96,18 @@ android {
             keyPassword 'android'
         }
          release {
-            storeFile file('gsehat.keystore')
-            storePassword 'gsehat'
-            keyAlias 'gsehat'
-            keyPassword 'gsehat'
+             if (System.getenv()["CI"]) { // CI=true is exported by Codemagic
+                 storeFile file(System.getenv()["CM_KEYSTORE_PATH"])
+                 storePassword System.getenv()["CM_KEYSTORE_PASSWORD"]
+                 keyAlias System.getenv()["CM_KEY_ALIAS_USERNAME"]
+                 keyPassword System.getenv()["CM_KEY_ALIAS_PASSWORD"]
+             } else {
+                 storeFile file('gsehat.keystore')
+                 storePassword 'gsehat'
+                 keyAlias 'gsehat'
+                 keyPassword 'gsehat'
+             }
+
         }
     }
     buildTypes {
