@@ -1,0 +1,24 @@
+# Check out https://docs.codemagic.io/yaml/building-a-react-native-app/ for more information
+# Please review and update values
+
+workflows:
+    react-native-android:
+        name: React Native Android
+        max_build_duration: 120
+        instance_type: mac_mini_m1
+        environment:
+          android_signing:
+            - gsehat_key
+          node: v20.1.0
+        scripts:
+            - name: Install npm dependencies
+              script: |
+                npm install
+            - name: Set Android SDK location
+              script: |
+                echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"            
+            - name: Build Android release
+              script: |
+                ./gradlew assembleRelease
+        artifacts:
+            - android/app/build/outputs/**/*.apk
