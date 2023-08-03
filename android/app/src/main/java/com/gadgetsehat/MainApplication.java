@@ -11,6 +11,8 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
+import com.gadgetsehat.devicerotation.RNDeviceRotationPackage;
+
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
@@ -28,7 +30,8 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
-          packages.add(new GadgetSehatPackage());
+            packages.add(new RNDeviceRotationPackage());
+            packages.add(new GadgetSehatPackage());
 
           return packages;
         }

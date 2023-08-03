@@ -1,33 +1,48 @@
-import { Animated, Image, ScrollView, Switch, View } from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import { Image, ScrollView, View } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
 import Text from '@gs/components/basic/Text';
-import { SensorTypes, gyroscope, setUpdateIntervalForType } from 'react-native-sensors';
+
+import { Accelerometer } from 'expo-sensors';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 const PhonePositionScreen = () => {
-  const [value, setValue] = React.useState(false);
-
-  const rotate = useRef(
-    new Animated.Value(0, {
-      useNativeDriver: true,
-    }),
-  ).current;
+  const rotationX = useSharedValue(0);
+  const [rollValue, setRollValue] = React.useState(0);
 
   useEffect(() => {
-    setUpdateIntervalForType(SensorTypes.gyroscope, 50);
-    let lastX = [0];
-    let Listener = gyroscope.subscribe(({ x }) => {
-      lastX.push(Math.round(x / 0.0025));
-      rotate.setValue(lastX.reduce((a, b) => a + b) / lastX.length);
-    });
-    return () => {
-      try {
-        Listener.unsubscribe();
-      } catch (err) {
-        console.log('Gyroscope Animation unsubscribe Error: ', err);
+    Accelerometer.addListener(acclData => {
+      if (acclData) {
+        let { x, y, z } = acclData;
+
+        // Calculate roll (tilt along Y-axis)
+        let roll = Math.atan2(y, Math.sqrt(x * x + z * z));
+
+        let rollDegrees = (roll * 180) / Math.PI;
+        setRollValue(rollDegrees);
+        rotationX.value = rollDegrees;
       }
+    });
+
+    Accelerometer.setUpdateInterval(100);
+
+    // // Don't forget to remove the listener when the component is unmounted
+    return () => {
+      Accelerometer.removeAllListeners();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [rotationX]);
+
+  const viewStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotate: `${rotationX.value}deg` }],
+    };
+  });
+
+  const getScore = useMemo(() => {
+    if (rollValue >= 88 && rollValue <= 92) {
+      return 100;
+    }
+    return 40;
+  }, [rollValue]);
 
   return (
     <ScrollView className="px-4">
@@ -35,24 +50,15 @@ const PhonePositionScreen = () => {
 
       <View className="items-center justify-center relative py-6">
         <Image
-          source={require('@gs/assets/images/phone_position_phone.png')}
-          className="w-1/2 mt-4 opacity-50"
+          source={require('@gs/assets/images/phone_position_angle.png')}
+          className="w-full mt-4 opacity-50 rotate-90"
           resizeMode="contain"
         />
 
         <Animated.Image
-          source={require('@gs/assets/images/phone_position_phone.png')}
-          className="w-1/2 mt-4 inset-0 z-10 absolute top-6"
-          style={{
-            transform: [
-              {
-                rotate: rotate.interpolate({
-                  inputRange: [-180, 180],
-                  outputRange: ['-180deg', '180deg'],
-                }),
-              },
-            ],
-          }}
+          source={require('@gs/assets/images/phone_position_angle.png')}
+          className="w-full mt-4 inset-0 z-10 absolute top-6"
+          style={viewStyle}
           resizeMode="contain"
         />
       </View>
@@ -60,23 +66,13 @@ const PhonePositionScreen = () => {
       <Text className="text-lg text-center my-6 font-bold">Skor posisi:</Text>
       <View className="flex-row justify-center">
         <View className="bg-[#E4F3FF] px-14 py-1 rounded-md">
-          <Text className="text-lg text-center font-bold">40</Text>
+          <Text className="text-lg text-center font-bold">{getScore}</Text>
         </View>
       </View>
       <Text className="text-xs text-center my-6 mx-12">
-        Posisi gadget kamu terlalu miring ke atas, turunkan posisi gadget kamu sekarang untuk posisi
-        yang lebih sehat
+        Atur posisi gadget kamu sekarang untuk posisi yang lebih sehat
       </Text>
 
-      <View className="p-4 border border-primary rounded-2xl">
-        <Text className="text-lg leading-6  font-medium">
-          Pengaturan Pengingat Posisi Handphone
-        </Text>
-        <View className="flex items-center flex-row mt-2">
-          <Text className="text-xs flex-1">Selalu nyalakan pengingat posisi handphone?</Text>
-          <Switch value={value} onValueChange={setValue} />
-        </View>
-      </View>
       <View className="h-36" />
     </ScrollView>
   );
