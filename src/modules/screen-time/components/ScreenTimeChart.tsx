@@ -5,12 +5,22 @@ import Text from '@gs/components/basic/Text';
 import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import { LineChart } from 'react-native-chart-kit';
 import DangerIcon from '@gs/assets/svg/DangerIcon';
-import { format, fromUnixTime } from 'date-fns';
+import { format, fromUnixTime, getUnixTime, sub } from 'date-fns';
 import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 
 const ScreenTimeChart = () => {
-  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
+  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart({
+    dateList: [...new Array(7)].map((_, index) => {
+      const start = Math.floor(getUnixTime(sub(new Date(), { days: index + 1 })) * 1000);
+      const end = Math.floor(getUnixTime(sub(new Date(), { days: index })) * 1000);
+
+      return {
+        start,
+        end,
+      };
+    }),
+  });
 
   const isLoading = loadingChart;
 

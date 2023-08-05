@@ -9,7 +9,7 @@ import Articles from '../Components/Articles';
 import DashboardHeader from '../Components/DashboardHeader';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import { LineChart } from 'react-native-chart-kit';
-import { format, fromUnixTime } from 'date-fns';
+import { format, fromUnixTime, getUnixTime, sub } from 'date-fns';
 import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 import DangerIcon from '@gs/assets/svg/DangerIcon';
@@ -44,7 +44,17 @@ const Item = ({ item }: { item: Menu }) => {
 const DashboardScreen = () => {
   const navigation = useNavigation();
   const { data: totalScreenTime, isLoading: loadingScreenTime } = useQueryTotalScreenTime();
-  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
+  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart({
+    dateList: [...new Array(7)].map((_, index) => {
+      const start = Math.floor(getUnixTime(sub(new Date(), { days: index + 1 })) * 1000);
+      const end = Math.floor(getUnixTime(sub(new Date(), { days: index })) * 1000);
+
+      return {
+        start,
+        end,
+      };
+    }),
+  });
 
   const isLoading = loadingScreenTime || loadingChart;
 
@@ -89,7 +99,9 @@ const DashboardScreen = () => {
             <View className="flex-1">
               <Text className="font-medium text-primary">Screen time kamu hari ini!</Text>
               <Text className="text-[9px] my-1">{new Date().toLocaleDateString()}</Text>
-              <Text className="text-xl font-medium">{convertMsToTime(totalScreenTime || 0)}</Text>
+              <Text className="text-xl font-medium">
+                {convertMsToTime(totalScreenTime?.timeSpent || 0)}
+              </Text>
             </View>
             <View className="flex-1 items-end">
               <TouchableOpacity

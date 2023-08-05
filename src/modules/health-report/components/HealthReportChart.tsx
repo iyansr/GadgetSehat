@@ -6,21 +6,27 @@ import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import { LineChart } from 'react-native-chart-kit';
 import DangerIcon from '@gs/assets/svg/DangerIcon';
 import { format, fromUnixTime } from 'date-fns';
-import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
+import { TimeSpent } from '@gs/lib/native/screentime/screentime';
 
-const HealthReportChart = () => {
-  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart();
+type ChartData = {
+  start: number;
+  end: number;
+};
 
-  const isLoading = loadingChart;
+type Props = {
+  chartData?: Array<ChartData & TimeSpent>;
+  isLoading?: boolean;
+};
 
+const HealthReportChart = ({ chartData, isLoading = true }: Props) => {
   const data: LineChartData = {
-    labels: chartData?.map(c =>
-      format(fromUnixTime(Math.floor(c.end / 1000)), 'dd/MM'),
-    ) as string[],
+    labels: chartData
+      ?.map(c => format(fromUnixTime(Math.floor(c.end / 1000)), 'HH:mm'))
+      ?.reverse() as string[],
     datasets: [
       {
-        data: chartData?.map(c => c.timeSpent) as number[], //hourlyUsage?.map(h => h.ms) as number[],
+        data: chartData?.map(c => c.timeSpent)?.reverse() as number[],
         color: (opacity = 1) => `rgba(28, 116, 187, ${opacity})`, // optional
         strokeWidth: 2, // optional
       },

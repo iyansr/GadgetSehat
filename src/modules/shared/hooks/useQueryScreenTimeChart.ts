@@ -1,26 +1,32 @@
 import { getTimeSpent } from '@gs/lib/native/screentime/screentime';
 import { useQuery } from '@tanstack/react-query';
-import { getUnixTime, sub } from 'date-fns';
 
-const useQueryScreenTimeChart = () => {
+type Params = {
+  dateList: {
+    start: number;
+    end: number;
+  }[];
+};
+
+const useQueryScreenTimeChart = ({ dateList }: Params) => {
   return useQuery({
-    queryKey: ['screen-time-chart-data'],
+    queryKey: ['screen-time-chart-data', dateList],
     queryFn: async () => {
       const result = await Promise.all(
-        [...new Array(7)].map(async (_, index) => {
-          const start = Math.floor(getUnixTime(sub(new Date(), { days: index + 1 })) * 1000);
-          const end = Math.floor(getUnixTime(sub(new Date(), { days: index })) * 1000);
-
+        dateList.map(async ({ start, end }) => {
+          const data = await getTimeSpent(end, start);
           return {
             start,
             end,
-            timeSpent: await getTimeSpent(end, start),
+            timeSpent: data.timeSpent,
+            packageList: data.packageList,
           };
         }),
       );
 
       return result;
     },
+    keepPreviousData: true,
   });
 };
 

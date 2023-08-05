@@ -30,3 +30,7 @@ export function convertMsToHour(milliseconds: number) {
 
   return hours;
 }
+
+export function normalizeUnixTime(unixTime: number) {
+  return Math.floor(unixTime / 1000);
+}

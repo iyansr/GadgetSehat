@@ -1,14 +1,17 @@
 import { getTimeSpent } from '@gs/lib/native/screentime/screentime';
 import { useQuery } from '@tanstack/react-query';
-import { getUnixTime, startOfDay } from 'date-fns';
 
-const useQueryTotalScreenTime = () => {
-  return useQuery<unknown, unknown, number>({
-    queryKey: ['Screen-time-today'],
+const useQueryTotalScreenTime = (start = 0, end = 0) => {
+  return useQuery({
+    queryKey: ['screen-time-list', start, end],
     queryFn: async () => {
-      const result = await getTimeSpent(0, Math.floor(getUnixTime(startOfDay(new Date())) * 1000));
-      return result;
+      const result = await getTimeSpent(start, end);
+      return {
+        ...result,
+        packageList: result.packageList.sort((a, b) => b.usageTime - a.usageTime),
+      };
     },
+    keepPreviousData: true,
   });
 };
 

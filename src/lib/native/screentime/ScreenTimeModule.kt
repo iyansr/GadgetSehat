@@ -33,12 +33,11 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
     @ReactMethod
     fun getTimeSpent(start: Double, end: Double, promise: Promise) {
         try {
-//            val end = System.currentTimeMillis()
-//            val start = end - 1000 * 60 * 60 * 24 // one day ago
 
             val startTime = if(start > 0) start.toLong() else System.currentTimeMillis()
             val endTime = if(end > 0) end.toLong() else startTime - 1000 * 60 * 60 * 24
 
+            val packageManager = reactContext.packageManager
             val usageStatsManager = reactContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
             val events = usageStatsManager.queryEvents(endTime, startTime)
             val eventMap = mutableMapOf<String, MutableList<UsageEvents.Event>>()
@@ -65,15 +64,32 @@ class ScreenTimeModule(private val reactContext: ReactApplicationContext) : Reac
             }
 
             var timeSpent = 0L
+            val appUsageArray = Arguments.createArray()
 
-            for ((_, duration) in screenTimeMap){
-              timeSpent += duration
+            for ((packageName, duration) in screenTimeMap){
+                val appUsageObject = Arguments.createMap().apply {
+                    putString("packageName", packageName)
+                    putDouble("usageTime", duration.toDouble())
+                    val appIcon = getAppIcon(packageName, packageManager)
+                    if (appIcon != null) {
+                        val iconBase64 = convertDrawableToBase64(appIcon)
+                        putString("iconBase64", iconBase64)
+                    } else {
+                        putString("iconBase64", null)
+                    }
+                }
+                appUsageArray.pushMap(appUsageObject)
+                timeSpent += duration
             }
-            promise.resolve(timeSpent.toDouble())
+            var result = Arguments.createMap().apply {
+                putArray("packageList", appUsageArray)
+                putDouble("timeSpent", timeSpent.toDouble())
+            }
+
+            promise.resolve(result)
         } catch (e: Exception) {
             promise.reject("Error: getTimeSpent", e)
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

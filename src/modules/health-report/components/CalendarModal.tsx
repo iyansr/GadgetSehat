@@ -1,11 +1,15 @@
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
+import { format } from 'date-fns';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 import ReactNativeModal from 'react-native-modal';
+
+import '@gs/lib/calendarLocale';
+import { FORMAT_PARSE } from '@gs/modules/shared/constant';
 
 type MarkedDates = Record<string, MarkingProps>;
 
@@ -16,7 +20,9 @@ type Props = {
 };
 
 const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
-  const [selectedDates, setSelectedDates] = useState<Record<string, MarkingProps>>();
+  const [selectedDates, setSelectedDates] = useState<Record<string, MarkingProps>>({
+    [format(new Date(), FORMAT_PARSE)]: { selected: true },
+  });
 
   const onDayPress = (date: DateData) => {
     const currDate = date.dateString;

@@ -1,19 +1,20 @@
 import { Image, ScrollView, Switch, View } from 'react-native';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
-import { cn, convertMsToTime } from '@gs/lib/utils';
+import { cn, convertMsToTime, normalizeUnixTime } from '@gs/lib/utils';
 import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
 import ArrowDownIcon from '@gs/assets/svg/ArrowDownIcon';
-import useQueryAppUsage from '@gs/modules/shared/hooks/useQueryAppUsage';
-import { format, getUnixTime, parse, startOfDay } from 'date-fns';
-import { ScreenTimeInterval } from '@gs/lib/native/screentime/screentime';
+import { endOfDay, format, fromUnixTime, getUnixTime, parse, startOfDay, sub } from 'date-fns';
 import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
 import CalendarModal from '../components/CalendarModal';
 import HealthReportChart from '../components/HealthReportChart';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
+import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
+import RangeCalendarModal from '../components/RangeCalendarModal';
+import { FORMAT_DISPLAY, FORMAT_PARSE } from '@gs/modules/shared/constant';
 
 const screentimeReport = [
   {
@@ -30,37 +31,119 @@ const screentimeReport = [
   },
 ];
 
+type Mode = 'daily' | 'weekly' | 'monthly';
+
+const today = new Date();
+const sevenDaysAgo = sub(new Date(), { days: 7 });
+
 const HealthReportScreen = () => {
-  const startToday = Math.floor(getUnixTime(startOfDay(new Date())) * 1000);
   const navigation = useNavigation();
 
   const [value, setValue] = React.useState(false);
   const [value1, setValue1] = React.useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showModalRange, setShowModalRange] = useState(false);
+  const [mode, setMode] = useState<Mode>('daily');
 
   const [currDate, setCurrDate] = useState(new Date());
+  const [selectedStartDate, setSelectedStartDate] = useState<string | null>(
+    format(today, FORMAT_PARSE),
+  );
+  const [selectedEndDate, setSelectedEndDate] = useState<string | null>(
+    format(sevenDaysAgo, FORMAT_PARSE),
+  );
 
-  const { data: appUsageReport } = useQueryAppUsage({
-    start: 0,
-    end: startToday,
-    interval: ScreenTimeInterval.INTERVAL_DAILY,
+  const isTodayDate = useMemo(() => {
+    return format(currDate, FORMAT_DISPLAY) === format(new Date(), FORMAT_DISPLAY);
+  }, [currDate]);
+
+  const dateList = useMemo(() => {
+    return [...new Array(7)].map((_, index) => {
+      const date = isTodayDate ? new Date() : startOfDay(currDate);
+
+      const start = Math.floor(getUnixTime(sub(currDate, { hours: index + 1 })) * 1000);
+      const end = Math.floor(getUnixTime(sub(date, { hours: index })) * 1000);
+
+      return {
+        start,
+        end,
+      };
+    });
+  }, [currDate, isTodayDate]);
+
+  const screenTimeParams = useMemo(() => {
+    return {
+      start: Math.floor(getUnixTime(startOfDay(currDate)) * 1000),
+      end: Math.floor(getUnixTime(endOfDay(currDate)) * 1000),
+    };
+  }, [currDate]);
+
+  const { data: totalScreenTime } = useQueryTotalScreenTime(
+    screenTimeParams.end,
+    screenTimeParams.start,
+  );
+  const { data: usageListPerHour, isLoading } = useQueryScreenTimeChart({
+    dateList,
   });
 
-  const { data: totalScreenTime } = useQueryTotalScreenTime();
+  const peakUsage = useMemo(() => {
+    return usageListPerHour?.reduce((prev, curr) => {
+      if (curr.timeSpent > prev.timeSpent) {
+        return curr;
+      } else {
+        return prev;
+      }
+    });
+  }, [usageListPerHour]);
+
+  const handleShowModal = () => {
+    switch (mode) {
+      case 'daily':
+        setShowModal(true);
+        break;
+
+      case 'weekly':
+        setShowModalRange(true);
+        break;
+      case 'monthly':
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const displayDate = useMemo(() => {
+    switch (mode) {
+      case 'daily':
+        return format(currDate, FORMAT_DISPLAY);
+
+      case 'weekly':
+        const parseStart = parse(selectedStartDate ?? '', FORMAT_PARSE, new Date());
+        const parseEnd = parse(selectedEndDate ?? '', FORMAT_PARSE, new Date());
+        return `${format(parseStart, FORMAT_DISPLAY)} - ${format(parseEnd, FORMAT_DISPLAY)}`;
+      case 'monthly':
+        return '';
+
+      default:
+        return format(currDate, FORMAT_DISPLAY);
+    }
+  }, [currDate, mode, selectedEndDate, selectedStartDate]);
 
   return (
     <Fragment>
       <ScrollView scrollIndicatorInsets={{ right: 1 }}>
         <View className="p-4 flex-row">
-          {['Daily', 'Weekly', 'Monthly'].map((item, index) => (
+          {['Daily', 'Weekly', 'Monthly'].map(item => (
             <TouchableOpacity
+              onPress={() => setMode(item.toLowerCase() as Mode)}
               key={item}
               className={cn('bg-primaryLight px-4 py-2 rounded-full', {
-                'bg-white': index !== 0,
+                'bg-white': mode !== item.toLowerCase(),
               })}>
               <Text
                 className={cn('text-primary font-medium', {
-                  'text-neutral-400': index !== 0,
+                  'text-neutral-400': mode !== item.toLowerCase(),
                 })}>
                 {item}
               </Text>
@@ -70,10 +153,8 @@ const HealthReportScreen = () => {
 
         <View className="flex-row px-4 justify-between items-center mt-6">
           <Text>Tanggal</Text>
-          <TouchableOpacity
-            className="flex items-center flex-row"
-            onPress={() => setShowModal(true)}>
-            <Text>{format(currDate, 'dd/MM/yyyy')}</Text>
+          <TouchableOpacity className="flex items-center flex-row" onPress={handleShowModal}>
+            <Text>{displayDate}</Text>
             <View className="-rotate-90 ml-3">
               <ChevronLeft color="#1C74BB" />
             </View>
@@ -87,12 +168,14 @@ const HealthReportScreen = () => {
             <View className="mt-6">
               <LevelsBadge level="good" size="large" text="Sehat" />
             </View>
-            <TouchableOpacity
-              className="mt-4"
-              hitSlop={8}
-              onPress={() => navigation.navigate('HealthHistory')}>
-              <Text className="text-xs font-bold text-primary">Lihat detail riwayat</Text>
-            </TouchableOpacity>
+            {!isTodayDate && (
+              <TouchableOpacity
+                className="mt-4"
+                hitSlop={8}
+                onPress={() => navigation.navigate('HealthHistory')}>
+                <Text className="text-xs font-bold text-primary">Lihat detail riwayat</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         <View className="px-4 mt-4">
@@ -106,7 +189,7 @@ const HealthReportScreen = () => {
                 </View>
                 <View className="relative px-10 pl-16 bg-[#E4F3FF] py-3 rounded-lg">
                   <Text className="font-semibold text-xl">
-                    {convertMsToTime(totalScreenTime ?? 0)}
+                    {convertMsToTime(totalScreenTime?.timeSpent ?? 0)}
                   </Text>
                 </View>
               </View>
@@ -114,10 +197,14 @@ const HealthReportScreen = () => {
 
             <View className="flex-row px-4 justify-between items-center mt-6">
               <Text className="font-semibold text-xs">Grafik Penggunaan</Text>
-              <Text className="font-semibold text-xs text-red-500">Peak usage: 08am - 12pm</Text>
+              <Text className="font-semibold text-xs text-red-500">
+                Peak usage:{' '}
+                {format(fromUnixTime(normalizeUnixTime(peakUsage?.start ?? Date.now())), 'HH:mm')} -
+                {format(fromUnixTime(normalizeUnixTime(peakUsage?.end ?? Date.now())), 'HH:mm')}
+              </Text>
             </View>
 
-            <HealthReportChart />
+            <HealthReportChart chartData={usageListPerHour} isLoading={isLoading} />
 
             <View className="flex-row items-center space-x-2 px-4 mt-4">
               {screentimeReport.map((item, index) => (
@@ -143,8 +230,8 @@ const HealthReportScreen = () => {
               <Text className="text-center font-bold text-base">Penggunaan Aplikasi</Text>
             </View>
 
-            <View className="flex-row items-center justify-between px-4 mt-4 flex-wrap">
-              {appUsageReport?.appUsageList?.map((item, index) => (
+            <View className="flex-row items-center px-4 mt-4 flex-wrap">
+              {totalScreenTime?.packageList?.slice(0, 8)?.map((item, index) => (
                 <View key={index} className="w-1/4 p-1">
                   <View className=" bg-primaryLight p-2 rounded-lg items-center justify-center  aspect-[5/6]">
                     <Image
@@ -206,11 +293,20 @@ const HealthReportScreen = () => {
         isVisible={showModal}
         onConfirm={dates => {
           const d = Object.keys(dates)[0];
-          const dateParse = parse(d, 'yyyy-MM-dd', new Date());
+          const dateParse = parse(d, FORMAT_PARSE, new Date());
           setCurrDate(dateParse);
           setShowModal(false);
         }}
         onClose={() => setShowModal(false)}
+      />
+      <RangeCalendarModal
+        isVisible={showModalRange}
+        onClose={() => setShowModalRange(false)}
+        onConfirm={data => {
+          setSelectedStartDate(data.startDate);
+          setSelectedEndDate(data.endDate);
+          setShowModalRange(false);
+        }}
       />
     </Fragment>
   );

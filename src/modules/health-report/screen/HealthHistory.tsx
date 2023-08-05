@@ -2,6 +2,7 @@ import ArrowDownIcon from '@gs/assets/svg/ArrowDownIcon';
 import ArrowUpIcon from '@gs/assets/svg/ArrowUpIcon';
 import Text from '@gs/components/basic/Text';
 import LevelsBadge, { LevelsBadgeProps } from '@gs/components/ui/LevelsBadge';
+import { FORMAT_DISPLAY } from '@gs/modules/shared/constant';
 import { add, format } from 'date-fns';
 import React from 'react';
 import { FlatList, View } from 'react-native';
@@ -9,7 +10,7 @@ import { FlatList, View } from 'react-native';
 const levels = ['good', 'danger', 'warning', 'normal', 'attention'];
 const icons = [ArrowDownIcon, ArrowUpIcon];
 const data = [...new Array(7)].map((_, index) => {
-  const date = format(add(new Date(), { days: index + 1 }), 'dd/MM/yyyy');
+  const date = format(add(new Date(), { days: index + 1 }), FORMAT_DISPLAY);
 
   return {
     date,

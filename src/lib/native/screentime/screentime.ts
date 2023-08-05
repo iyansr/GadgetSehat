@@ -52,7 +52,16 @@ export const getTotalScreenTime: ScreenTimeModuleType['getTotalScreenTime'] = as
   return ScreenTimeModule?.getTotalScreenTime(startUnix, endUnix);
 };
 
-export const getTimeSpent = async (startUnix = 0, endUnix = 0) => {
+export type TimeSpent = {
+  timeSpent: number;
+  packageList: {
+    packageName: string;
+    usageTime: number;
+    iconBase64: string | null;
+  }[];
+};
+
+export const getTimeSpent = async (startUnix = 0, endUnix = 0): Promise<TimeSpent> => {
   return ScreenTimeModule?.getTimeSpent(startUnix, endUnix);
 };
 
