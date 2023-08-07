@@ -13,8 +13,16 @@ import { FORMAT_PARSE } from '@gs/modules/shared/constant';
 
 type MarkedDates = Record<string, MarkingProps>;
 
-type Props = {
-  onConfirm?: ({ startDate, endDate }: { startDate: string; endDate: string }) => void;
+export type RangeCalendarModalConfirm = ({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) => void;
+
+export type RangeCalendarModalProps = {
+  onConfirm?: RangeCalendarModalConfirm;
   onClose?: () => void;
   isVisible: boolean;
 };
@@ -54,7 +62,7 @@ const endDateMarking: MarkingProps = {
 const currentDate = new Date();
 const sevenDaysAgo = sub(new Date(), { days: 7 });
 
-const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
+const RangeCalendarModal = ({ onConfirm, isVisible, onClose }: RangeCalendarModalProps) => {
   const [selectedStartDate, setSelectedStartDate] = useState<string | null>(
     format(currentDate, FORMAT_PARSE),
   );
@@ -64,8 +72,8 @@ const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
   const [markedDates, setMarkedDates] = useState<MarkedDates | undefined>();
   const { width, height } = useWindowDimensions();
 
-  useEffect(() => {
-    const dateRange = eachDayOfInterval({ start: sevenDaysAgo, end: currentDate });
+  const formatMarkedDates = useCallback((start: Date, end: Date) => {
+    const dateRange = eachDayOfInterval({ start, end });
 
     let selectedDates: MarkedDates = {};
     dateRange.forEach((date, index) => {
@@ -76,7 +84,14 @@ const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
         ...(index === dateRange.length - 1 ? endDateMarking : {}),
       };
     });
+
+    return selectedDates;
+  }, []);
+
+  useEffect(() => {
+    const selectedDates = formatMarkedDates(sevenDaysAgo, currentDate);
     setMarkedDates(selectedDates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onDayPress = useCallback(
@@ -89,29 +104,25 @@ const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
           [day.dateString]: startDateMarking,
         });
       } else {
-        // If start date is already selected, set the end date
+        // // If start date is already selected, set the end date
         setSelectedEndDate(day.dateString);
 
         // Get all the dates in the range between selectedStartDate and selectedEndDate
         const startDate = parse(selectedStartDate, FORMAT_PARSE, new Date());
         const endDate = parse(day.dateString, FORMAT_PARSE, new Date());
-        const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
 
-        // Convert the date objects to dateString format and store them in an object with proper marking
-        let selectedDates: MarkedDates = {};
-        dateRange.forEach((date, index) => {
-          const dateString = format(date, FORMAT_PARSE);
-          selectedDates[dateString] = {
-            ...dateBetweenMarking,
-            ...(index === 0 ? startDateMarking : {}),
-            ...(index === dateRange.length - 1 ? endDateMarking : {}),
-          };
-        });
+        if (startDate > endDate) {
+          const selectedDates = formatMarkedDates(endDate, startDate);
+
+          setMarkedDates(selectedDates);
+          return;
+        }
+        const selectedDates = formatMarkedDates(startDate, endDate);
 
         setMarkedDates(selectedDates);
       }
     },
-    [selectedEndDate, selectedStartDate],
+    [selectedEndDate, selectedStartDate, formatMarkedDates],
   );
 
   const handleConfirm = () => {
@@ -153,4 +164,4 @@ const CalendarModal = ({ onConfirm, isVisible, onClose }: Props) => {
   );
 };
 
-export default CalendarModal;
+export default RangeCalendarModal;

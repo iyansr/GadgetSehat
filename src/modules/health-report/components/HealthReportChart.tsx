@@ -8,6 +8,7 @@ import DangerIcon from '@gs/assets/svg/DangerIcon';
 import { format, fromUnixTime } from 'date-fns';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 import { TimeSpent } from '@gs/lib/native/screentime/screentime';
+import { Mode } from '../screen/HealthReportScreen';
 
 type ChartData = {
   start: number;
@@ -17,12 +18,26 @@ type ChartData = {
 type Props = {
   chartData?: Array<ChartData & TimeSpent>;
   isLoading?: boolean;
+  mode: Mode;
 };
 
-const HealthReportChart = ({ chartData, isLoading = true }: Props) => {
+const HealthReportChart = ({ chartData, mode, isLoading = true }: Props) => {
+  const getFormat = (currentMode: Mode) => {
+    switch (currentMode) {
+      case 'daily':
+        return 'HH:mm';
+      case 'weekly':
+        return 'dd/MM';
+      default:
+        return 'HH:mm';
+    }
+  };
+
   const data: LineChartData = {
     labels: chartData
-      ?.map(c => format(fromUnixTime(Math.floor(c.end / 1000)), 'HH:mm'))
+      ?.map(c =>
+        chartData.length > 7 ? '' : format(fromUnixTime(Math.floor(c.end / 1000)), getFormat(mode)),
+      )
       ?.reverse() as string[],
     datasets: [
       {
@@ -51,35 +66,39 @@ const HealthReportChart = ({ chartData, isLoading = true }: Props) => {
           height={170}
           yAxisInterval={1} // optional, defaults to 1
           renderDotContent={({ x, y, index }) => {
-            const currentData = data.datasets[0].data[index];
-            const hour = convertMsToHour(Number(currentData));
-            let display = '';
-            if (hour === 0) {
-              display = convertMsToTime(Number(currentData));
-            }
-            display = hour + ' h';
-            const isDanger = hour >= 9;
-            return (
-              <View
-                key={index}
-                className={cn('items-center absolute w-8', {
-                  ' ': !isDanger,
-                })}
-                style={{
-                  top: y - 14, // <--- relevant to height / width (
-                  left: x - 7, // <--- width / 2
-                }}>
-                <View className="bg-transparent">
-                  {isDanger ? (
-                    <DangerIcon />
-                  ) : (
-                    <Text className="font-semibold text-primary" style={{ fontSize: 10 }}>
-                      {display}
-                    </Text>
-                  )}
+            if (chartData && chartData?.length <= 7) {
+              const currentData = data.datasets[0].data[index];
+              const hour = convertMsToHour(Number(currentData));
+              let display = '';
+              if (hour === 0) {
+                display = convertMsToTime(Number(currentData));
+              }
+              display = hour + ' h';
+              const isDanger = hour >= 9;
+              return (
+                <View
+                  key={index}
+                  className={cn('items-center absolute w-8', {
+                    ' ': !isDanger,
+                  })}
+                  style={{
+                    top: y - 14, // <--- relevant to height / width (
+                    left: x - 7, // <--- width / 2
+                  }}>
+                  <View className="bg-transparent">
+                    {isDanger ? (
+                      <DangerIcon />
+                    ) : (
+                      <Text className="font-semibold text-primary" style={{ fontSize: 10 }}>
+                        {display}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
-            );
+              );
+            }
+
+            return null;
           }}
           chartConfig={{
             backgroundGradientFrom: '#fff',
@@ -91,7 +110,7 @@ const HealthReportChart = ({ chartData, isLoading = true }: Props) => {
               borderRadius: 32,
             },
             propsForDots: {
-              r: '6',
+              r: chartData && chartData?.length <= 7 ? '6' : '0',
             },
             propsForHorizontalLabels: {
               fontSize: 8,

@@ -1,5 +1,5 @@
 import { Image, ScrollView, Switch, View } from 'react-native';
-import React, { Fragment, useMemo, useState } from 'react';
+import React, { Fragment, useCallback, useMemo, useState } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
 import { cn, convertMsToTime, normalizeUnixTime } from '@gs/lib/utils';
@@ -7,14 +7,27 @@ import ChevronLeft from '@gs/assets/svg/ChevronLeft';
 import LevelsBadge from '@gs/components/ui/LevelsBadge';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
 import ArrowDownIcon from '@gs/assets/svg/ArrowDownIcon';
-import { endOfDay, format, fromUnixTime, getUnixTime, parse, startOfDay, sub } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfDay,
+  endOfMonth,
+  format,
+  fromUnixTime,
+  getUnixTime,
+  isBefore,
+  parse,
+  startOfDay,
+  startOfMonth,
+  sub,
+} from 'date-fns';
 import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
 import CalendarModal from '../components/CalendarModal';
 import HealthReportChart from '../components/HealthReportChart';
 import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
-import RangeCalendarModal from '../components/RangeCalendarModal';
+import RangeCalendarModal, { RangeCalendarModalConfirm } from '../components/RangeCalendarModal';
 import { FORMAT_DISPLAY, FORMAT_PARSE } from '@gs/modules/shared/constant';
+import MonthPickerModal from '../components/MonthPickerModal';
 
 const screentimeReport = [
   {
@@ -31,7 +44,7 @@ const screentimeReport = [
   },
 ];
 
-type Mode = 'daily' | 'weekly' | 'monthly';
+export type Mode = 'daily' | 'weekly' | 'monthly';
 
 const today = new Date();
 const sevenDaysAgo = sub(new Date(), { days: 7 });
@@ -40,25 +53,27 @@ const HealthReportScreen = () => {
   const navigation = useNavigation();
 
   const [value, setValue] = React.useState(false);
-  const [value1, setValue1] = React.useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [showModalRange, setShowModalRange] = useState(false);
+  const [showPickerModal, setShowPickerModal] = useState(false);
   const [mode, setMode] = useState<Mode>('daily');
 
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [currDate, setCurrDate] = useState(new Date());
   const [selectedStartDate, setSelectedStartDate] = useState<string | null>(
-    format(today, FORMAT_PARSE),
+    format(sevenDaysAgo, FORMAT_PARSE),
   );
   const [selectedEndDate, setSelectedEndDate] = useState<string | null>(
-    format(sevenDaysAgo, FORMAT_PARSE),
+    format(today, FORMAT_PARSE),
   );
 
   const isTodayDate = useMemo(() => {
     return format(currDate, FORMAT_DISPLAY) === format(new Date(), FORMAT_DISPLAY);
   }, [currDate]);
 
-  const dateList = useMemo(() => {
-    return [...new Array(7)].map((_, index) => {
+  const hourlyList = useMemo(() => {
+    return [...new Array(24)].map((_, index) => {
       const date = isTodayDate ? new Date() : startOfDay(currDate);
 
       const start = Math.floor(getUnixTime(sub(currDate, { hours: index + 1 })) * 1000);
@@ -71,6 +86,50 @@ const HealthReportScreen = () => {
     });
   }, [currDate, isTodayDate]);
 
+  const weeklyList = useMemo(() => {
+    const startD = parse(selectedStartDate ?? '', FORMAT_PARSE, new Date());
+    const endD = parse(selectedEndDate ?? '', FORMAT_PARSE, new Date());
+
+    return eachDayOfInterval({ start: startD, end: endD }).map(date => {
+      const start = Math.floor(getUnixTime(startOfDay(date)) * 1000);
+      const end = Math.floor(getUnixTime(endOfDay(date)) * 1000);
+
+      return {
+        start,
+        end,
+      };
+    });
+  }, [selectedEndDate, selectedStartDate]);
+
+  const monthlyList = useMemo(() => {
+    const startD = startOfMonth(selectedMonth);
+    const endD = endOfMonth(selectedMonth);
+
+    return eachDayOfInterval({ start: startD, end: endD }).map(date => {
+      const start = Math.floor(getUnixTime(startOfDay(date)) * 1000);
+      const end = Math.floor(getUnixTime(endOfDay(date)) * 1000);
+
+      return {
+        start,
+        end,
+      };
+    });
+  }, [selectedMonth]);
+
+  const dateList = useMemo(() => {
+    switch (mode) {
+      case 'daily':
+        return hourlyList;
+      case 'weekly':
+        return weeklyList;
+      case 'monthly':
+        return monthlyList;
+
+      default:
+        return hourlyList;
+    }
+  }, [hourlyList, weeklyList, mode, monthlyList]);
+
   const screenTimeParams = useMemo(() => {
     return {
       start: Math.floor(getUnixTime(startOfDay(currDate)) * 1000),
@@ -82,19 +141,34 @@ const HealthReportScreen = () => {
     screenTimeParams.end,
     screenTimeParams.start,
   );
-  const { data: usageListPerHour, isLoading } = useQueryScreenTimeChart({
+  const { data: usageList, isLoading } = useQueryScreenTimeChart({
     dateList,
   });
 
+  const handleRangeConfirm = useCallback<RangeCalendarModalConfirm>(data => {
+    const startDate = parse(data.startDate, FORMAT_PARSE, new Date());
+    const endDate = parse(data.endDate, FORMAT_PARSE, new Date());
+
+    if (isBefore(startDate, endDate)) {
+      setSelectedStartDate(data.startDate);
+      setSelectedEndDate(data.endDate);
+    } else {
+      setSelectedStartDate(data.endDate);
+      setSelectedEndDate(data.startDate);
+    }
+
+    setShowModalRange(false);
+  }, []);
+
   const peakUsage = useMemo(() => {
-    return usageListPerHour?.reduce((prev, curr) => {
+    return usageList?.reduce((prev, curr) => {
       if (curr.timeSpent > prev.timeSpent) {
         return curr;
       } else {
         return prev;
       }
     });
-  }, [usageListPerHour]);
+  }, [usageList]);
 
   const handleShowModal = () => {
     switch (mode) {
@@ -106,6 +180,7 @@ const HealthReportScreen = () => {
         setShowModalRange(true);
         break;
       case 'monthly':
+        setShowPickerModal(true);
         break;
 
       default:
@@ -123,12 +198,12 @@ const HealthReportScreen = () => {
         const parseEnd = parse(selectedEndDate ?? '', FORMAT_PARSE, new Date());
         return `${format(parseStart, FORMAT_DISPLAY)} - ${format(parseEnd, FORMAT_DISPLAY)}`;
       case 'monthly':
-        return '';
+        return format(selectedMonth, 'MMMM yyyy');
 
       default:
         return format(currDate, FORMAT_DISPLAY);
     }
-  }, [currDate, mode, selectedEndDate, selectedStartDate]);
+  }, [currDate, mode, selectedEndDate, selectedStartDate, selectedMonth]);
 
   return (
     <Fragment>
@@ -197,14 +272,16 @@ const HealthReportScreen = () => {
 
             <View className="flex-row px-4 justify-between items-center mt-6">
               <Text className="font-semibold text-xs">Grafik Penggunaan</Text>
-              <Text className="font-semibold text-xs text-red-500">
-                Peak usage:{' '}
-                {format(fromUnixTime(normalizeUnixTime(peakUsage?.start ?? Date.now())), 'HH:mm')} -
-                {format(fromUnixTime(normalizeUnixTime(peakUsage?.end ?? Date.now())), 'HH:mm')}
-              </Text>
+              {mode === 'daily' && (
+                <Text className="font-semibold text-xs text-red-500">
+                  Peak usage:{' '}
+                  {format(fromUnixTime(normalizeUnixTime(peakUsage?.start ?? Date.now())), 'HH:mm')}{' '}
+                  -{format(fromUnixTime(normalizeUnixTime(peakUsage?.end ?? Date.now())), 'HH:mm')}
+                </Text>
+              )}
             </View>
 
-            <HealthReportChart chartData={usageListPerHour} isLoading={isLoading} />
+            <HealthReportChart chartData={usageList} isLoading={isLoading} mode={mode} />
 
             <View className="flex-row items-center space-x-2 px-4 mt-4">
               {screentimeReport.map((item, index) => (
@@ -280,10 +357,6 @@ const HealthReportScreen = () => {
               <Text className="text-xs flex-1">Peringatan Batas Waktu</Text>
               <Switch value={value} onValueChange={setValue} />
             </View>
-            <View className="flex items-center flex-row mt-2">
-              <Text className="text-xs flex-1">Floating Timer</Text>
-              <Switch value={value1} onValueChange={setValue1} />
-            </View>
           </View>
         </View>
 
@@ -302,10 +375,14 @@ const HealthReportScreen = () => {
       <RangeCalendarModal
         isVisible={showModalRange}
         onClose={() => setShowModalRange(false)}
-        onConfirm={data => {
-          setSelectedStartDate(data.startDate);
-          setSelectedEndDate(data.endDate);
-          setShowModalRange(false);
+        onConfirm={handleRangeConfirm}
+      />
+      <MonthPickerModal
+        isVisible={showPickerModal}
+        onClose={() => setShowPickerModal(false)}
+        onConfirm={d => {
+          setSelectedMonth(d);
+          setShowPickerModal(false);
         }}
       />
     </Fragment>
