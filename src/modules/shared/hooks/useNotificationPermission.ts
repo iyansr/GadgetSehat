@@ -3,7 +3,7 @@ import { PermissionsAndroid } from 'react-native';
 
 const useNotificationPermission = () => {
   return useQuery<unknown, unknown, boolean>({
-    queryKey: ['app-top-permission'],
+    queryKey: ['notification-permission'],
     queryFn: async () => {
       const isPermitted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,

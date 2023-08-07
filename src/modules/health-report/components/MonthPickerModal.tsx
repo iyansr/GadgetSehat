@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import ReactNativeModal from 'react-native-modal';
 
-import '@gs/lib/calendarLocale';
 import { DatePicker } from 'react-native-wheel-pick';
 
 type Props = {

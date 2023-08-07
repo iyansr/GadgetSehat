@@ -1,4 +1,4 @@
-import { Image, ScrollView, Switch, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import React, { Fragment, useCallback, useMemo, useState } from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
@@ -28,6 +28,8 @@ import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTime
 import RangeCalendarModal, { RangeCalendarModalConfirm } from '../components/RangeCalendarModal';
 import { FORMAT_DISPLAY, FORMAT_PARSE } from '@gs/modules/shared/constant';
 import MonthPickerModal from '../components/MonthPickerModal';
+import useQueryHasReminder from '@gs/modules/screen-time/hooks/useQueryHasReminder';
+import Toggle from '@gs/components/basic/Toggle';
 
 const screentimeReport = [
   {
@@ -51,6 +53,7 @@ const sevenDaysAgo = sub(new Date(), { days: 7 });
 
 const HealthReportScreen = () => {
   const navigation = useNavigation();
+  const { data: reminderData } = useQueryHasReminder();
 
   const [value, setValue] = React.useState(false);
 
@@ -351,11 +354,11 @@ const HealthReportScreen = () => {
 
             <View className="flex items-center flex-row mt-2">
               <Text className="text-xs flex-1">Screen Time</Text>
-              <Switch value={true} />
+              <Toggle switchOn onPress={() => {}} />
             </View>
             <View className="flex items-center flex-row mt-2">
               <Text className="text-xs flex-1">Peringatan Batas Waktu</Text>
-              <Switch value={value} onValueChange={setValue} />
+              <Toggle switchOn={!!reminderData?.hasReminder} onPress={() => {}} />
             </View>
           </View>
         </View>

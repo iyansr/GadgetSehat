@@ -42,7 +42,7 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
   const { data: notif = false } = useNotificationPermission();
 
   const handlePressNext = () => {
-    const isCompleteRequest = api && appsOnTop && notif;
+    const isCompleteRequest = api && notif;
     onPressNext?.(isCompleteRequest);
   };
 
@@ -73,7 +73,7 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
               text="Atur Perijinan API"
               enabled={!!api}
             />
-            <Item
+            {/* <Item
               onPress={() => {
                 if (!appsOnTop) {
                   openAppsOnTopSettings();
@@ -81,7 +81,7 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
               }}
               text="Atur Apps on Top"
               enabled={appsOnTop}
-            />
+            /> */}
             <Item
               onPress={async () => {
                 if (!notif) {
