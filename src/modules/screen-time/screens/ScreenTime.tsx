@@ -4,9 +4,20 @@ import Text from '@gs/components/basic/Text';
 import ClockIntro from '@gs/assets/svg/ClockIntro';
 import ScreenTimeChart from '../components/ScreenTimeChart';
 import Toggle from '@gs/components/basic/Toggle';
+import useQueryTotalScreenTime from '@gs/modules/shared/hooks/useQueryTotalScreenTime';
+import { convertMsToTime } from '@gs/lib/utils';
+import { getUnixTime, sub } from 'date-fns';
 
 const ScreenTime = () => {
   const [value1, setValue1] = React.useState(false);
+
+  const sevenDaysAgo = sub(new Date(), { days: 7 });
+  const today = new Date();
+  const { data: totalScreenTime } = useQueryTotalScreenTime();
+  const { data: totalScreenTime7Days } = useQueryTotalScreenTime(
+    Math.floor(getUnixTime(today) * 1000),
+    Math.floor(getUnixTime(sevenDaysAgo) * 1000),
+  );
 
   return (
     <ScrollView>
@@ -16,7 +27,9 @@ const ScreenTime = () => {
             <ClockIntro width={32} height={32} />
           </View>
           <View className="relative px-10 pl-16 bg-[#E4F3FF] py-3 rounded-lg">
-            <Text className="font-semibold text-xl">4h 30m</Text>
+            <Text className="font-semibold text-xl">
+              {convertMsToTime(totalScreenTime?.timeSpent || 0)}
+            </Text>
           </View>
         </View>
 
@@ -27,17 +40,18 @@ const ScreenTime = () => {
           <View className="flex-row p-3">
             <View className="flex-1">
               <Text className="font-medium text-primary">Rata-rata screen time 7 hari</Text>
-              <Text className="text-xl font-medium">4h 30m</Text>
+              <Text className="text-xl font-medium">
+                {convertMsToTime(totalScreenTime7Days?.timeSpent || 0)}
+              </Text>
             </View>
             <View className="flex-1 items-end">
               <Text className="text-[9px] my-1">
-                {new Date().toLocaleDateString()} - {new Date().toLocaleDateString()}
+                {sevenDaysAgo.toLocaleDateString()} - {new Date().toLocaleDateString()}
               </Text>
             </View>
           </View>
 
           <View className="items-center border-t border-primary">
-            {/* <DummyChart /> */}
             <ScreenTimeChart />
           </View>
         </View>

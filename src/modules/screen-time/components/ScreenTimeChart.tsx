@@ -1,25 +1,40 @@
 /* eslint-disable react-native/no-inline-styles */
 import { Dimensions, View } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Text from '@gs/components/basic/Text';
 import { cn, convertMsToHour, convertMsToTime } from '@gs/lib/utils';
 import { LineChart } from 'react-native-chart-kit';
 import DangerIcon from '@gs/assets/svg/DangerIcon';
-import { format, fromUnixTime, getUnixTime, sub } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfDay,
+  format,
+  fromUnixTime,
+  getUnixTime,
+  startOfDay,
+  sub,
+} from 'date-fns';
 import useQueryScreenTimeChart from '@gs/modules/shared/hooks/useQueryScreenTimeChart';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 
 const ScreenTimeChart = () => {
-  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart({
-    dateList: [...new Array(7)].map((_, index) => {
-      const start = Math.floor(getUnixTime(sub(new Date(), { days: index + 1 })) * 1000);
-      const end = Math.floor(getUnixTime(sub(new Date(), { days: index })) * 1000);
+  const weeklyList = useMemo(() => {
+    const sevenDaysAgo = sub(new Date(), { days: 7 });
+    const today = new Date();
+
+    return eachDayOfInterval({ start: sevenDaysAgo, end: today }).map(date => {
+      const start = Math.floor(getUnixTime(startOfDay(date)) * 1000);
+      const end = Math.floor(getUnixTime(endOfDay(date)) * 1000);
 
       return {
         start,
         end,
       };
-    }),
+    });
+  }, []);
+
+  const { data: chartData, isLoading: loadingChart } = useQueryScreenTimeChart({
+    dateList: weeklyList,
   });
 
   const isLoading = loadingChart;
