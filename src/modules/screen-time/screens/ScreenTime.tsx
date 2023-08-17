@@ -23,6 +23,8 @@ const ScreenTime = () => {
     Math.floor(getUnixTime(sevenDaysAgo) * 1000),
   );
 
+  const avg = (totalScreenTime7Days?.timeSpent ?? 7) / 7;
+
   return (
     <Fragment>
       <ScrollView>
@@ -45,9 +47,7 @@ const ScreenTime = () => {
             <View className="flex-row p-3">
               <View className="flex-1">
                 <Text className="font-medium text-primary">Rata-rata screen time 7 hari</Text>
-                <Text className="text-xl font-medium">
-                  {convertMsToTime(totalScreenTime7Days?.timeSpent || 0)}
-                </Text>
+                <Text className="text-xl font-medium">{convertMsToTime(avg || 0)}</Text>
               </View>
               <View className="flex-1 items-end">
                 <Text className="text-[9px] my-1">

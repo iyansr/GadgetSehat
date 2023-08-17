@@ -15,7 +15,7 @@
       "oauth_client": [
         {
           "client_id": "502786721996-bjb8ip339as6v06i62f9f8k1ebnj7j7c.apps.googleusercontent.com",
-          "client_type": 1,
+          "client_type": 3,
           "android_info": {
             "package_name": "com.gadgetsehat",
             "certificate_hash": "362d364b5b0f7a6711b1fc5136db1591506f30f5"
@@ -23,7 +23,7 @@
         },
         {
           "client_id": "502786721996-teaa8c9pgedou21bpvfu743a1dg4ukpl.apps.googleusercontent.com",
-          "client_type": 1,
+          "client_type": 3,
           "android_info": {
             "package_name": "com.gadgetsehat",
             "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"

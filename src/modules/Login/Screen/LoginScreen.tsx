@@ -1,4 +1,4 @@
-import { Image, StatusBar, View } from 'react-native';
+import { Alert, Image, StatusBar, View } from 'react-native';
 import React from 'react';
 
 import Text from '@gs/components/basic/Text';
@@ -15,7 +15,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = React.useState(false);
   const authContext = useAuth();
   const handleNavigation = () => {
-    navigation.replace('DashboardScreen');
+    navigation.replace('InitialScreen');
   };
 
   const handleLoginGoogle = async () => {
@@ -28,6 +28,7 @@ const LoginScreen = () => {
       await queryClient.invalidateQueries({ queryKey: ['firestoruser'] });
       handleNavigation();
     } catch (error) {
+      Alert.alert('Error', `Terjadi kesalahan saat login: ${error?.message}`);
       console.log({ error });
     } finally {
       setLoading(false);

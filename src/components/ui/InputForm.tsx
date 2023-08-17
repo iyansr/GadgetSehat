@@ -133,7 +133,7 @@ const TextInputForm = forwardRef<TextInput, Props>(({ type = 'text', value, ...p
           <TextInput
             textAlignVertical="center"
             cursorColor="#1C74BB"
-            className={cn('bg-neutral-100 px-4 rounded-full py-2', {
+            className={cn('bg-neutral-100 px-4 rounded-full py-2 text-neutral-900', {
               'border border-red-500': !!props?.error,
             })}
             placeholderTextColor="#a3a3a3"
