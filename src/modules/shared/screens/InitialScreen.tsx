@@ -15,9 +15,6 @@ const InitialScreen = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    // navigation.dispatch(
-    //   CommonActions.reset({ index: 0, routes: [{ name: 'EditProfileScreen' }] }),
-    // );
     if (!initializing || !isLoadingUser) {
       if (!user) {
         navigation.dispatch(

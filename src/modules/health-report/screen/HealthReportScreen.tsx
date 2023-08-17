@@ -284,7 +284,11 @@ const HealthReportScreen = () => {
               )}
             </View>
 
-            <HealthReportChart chartData={usageList} isLoading={isLoading} mode={mode} />
+            <HealthReportChart
+              chartData={mode === 'daily' ? usageList?.slice(0, 7) : usageList}
+              isLoading={isLoading}
+              mode={mode}
+            />
 
             <View className="flex-row items-center space-x-2 px-4 mt-4">
               {screentimeReport.map((item, index) => (

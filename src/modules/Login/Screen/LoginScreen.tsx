@@ -7,13 +7,15 @@ import useNavigation from '@gs/lib/react-navigation/useNavigation';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { cn } from '@gs/lib/utils';
 import useAuth from '@gs/modules/auth/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LoginScreen = () => {
+  const queryClient = useQueryClient();
   const navigation = useNavigation();
   const [loading, setLoading] = React.useState(false);
   const authContext = useAuth();
   const handleNavigation = () => {
-    navigation.replace('InitialScreen');
+    navigation.replace('DashboardScreen');
   };
 
   const handleLoginGoogle = async () => {
@@ -23,7 +25,7 @@ const LoginScreen = () => {
       const { idToken } = await GoogleSignin.signIn();
 
       await authContext.googleLogin(idToken as string);
-
+      await queryClient.invalidateQueries({ queryKey: ['firestoruser'] });
       handleNavigation();
     } catch (error) {
       console.log({ error });

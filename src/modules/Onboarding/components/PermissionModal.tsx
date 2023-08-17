@@ -1,4 +1,4 @@
-import { Image, PermissionsAndroid, Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import React from 'react';
 import ReactNativeModal from 'react-native-modal';
 import Text from '@gs/components/basic/Text';
@@ -6,9 +6,7 @@ import MainButton from '@gs/components/ui/MainButton';
 import CheckMark from '@gs/assets/svg/CheckMark';
 import ScreenTimeModule from '@gs/lib/native/screentime/screentime';
 import useAppUsagePermission from '@gs/modules/shared/hooks/useAppUsagePermission';
-import useAppsOnTopPermission from '@gs/modules/shared/hooks/useAppsOnTopPermission';
-import { openAppsOnTopSettings } from '@gs/lib/native/apps-on-top/appsOnTop';
-import useNotificationPermission from '@gs/modules/shared/hooks/useNotificationPermission';
+import * as ExpoNotif from 'expo-notifications';
 
 const Item = ({
   onPress,
@@ -38,11 +36,10 @@ type Props = {
 
 const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
   const { data: api = false } = useAppUsagePermission();
-  const { data: appsOnTop = false } = useAppsOnTopPermission();
-  const { data: notif = false } = useNotificationPermission();
+  const [notif, requestNotif] = ExpoNotif.usePermissions();
 
   const handlePressNext = () => {
-    const isCompleteRequest = api && notif;
+    const isCompleteRequest = api && !!notif?.granted;
     onPressNext?.(isCompleteRequest);
   };
 
@@ -73,31 +70,15 @@ const PermissionModal = ({ onPressNext, isModalVisible }: Props) => {
               text="Atur Perijinan API"
               enabled={!!api}
             />
-            {/* <Item
-              onPress={() => {
-                if (!appsOnTop) {
-                  openAppsOnTopSettings();
-                }
-              }}
-              text="Atur Apps on Top"
-              enabled={appsOnTop}
-            /> */}
+
             <Item
               onPress={async () => {
-                if (!notif) {
-                  await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-                    {
-                      message:
-                        'Gadget Sehat membutuhkan beberapa periijinan agar fitur Gadget Sehat dapat berfungsi maksimal Atur perijinan sebelum melanjutkan',
-                      title: 'Berikan Akses Notifikasi',
-                      buttonPositive: 'OK',
-                    },
-                  );
+                if (!notif?.granted) {
+                  await requestNotif();
                 }
               }}
               text="Atur Perijinan Notifikasi"
-              enabled={notif}
+              enabled={!!notif?.granted}
             />
           </View>
 
