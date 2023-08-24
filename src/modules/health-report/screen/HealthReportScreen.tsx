@@ -30,6 +30,7 @@ import { FORMAT_DISPLAY, FORMAT_PARSE } from '@gs/modules/shared/constant';
 import MonthPickerModal from '../components/MonthPickerModal';
 import useQueryHasReminder from '@gs/modules/screen-time/hooks/useQueryHasReminder';
 import Toggle from '@gs/components/basic/Toggle';
+import useBrightness from '@gs/modules/screen-brightness/hooks/useBrightness';
 
 const screentimeReport = [
   {
@@ -54,8 +55,6 @@ const sevenDaysAgo = sub(new Date(), { days: 7 });
 const HealthReportScreen = () => {
   const navigation = useNavigation();
   const { data: reminderData } = useQueryHasReminder();
-
-  const [value, setValue] = React.useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [showModalRange, setShowModalRange] = useState(false);
@@ -208,6 +207,37 @@ const HealthReportScreen = () => {
     }
   }, [currDate, mode, selectedEndDate, selectedStartDate, selectedMonth]);
 
+  const { brightness } = useBrightness();
+
+  const level = useMemo(() => {
+    return Math.floor(brightness * 100);
+  }, [brightness]);
+
+  const getLevel = () => {
+    if (level >= 0 && level <= 40) {
+      return 'normal';
+    } else if (level >= 40 && level <= 50) {
+      return 'good';
+    } else if (level >= 40 && level <= 100) {
+      return 'danger';
+    }
+    return 'normal';
+  };
+
+  const label = {
+    good: 'Sehat',
+    danger: 'Berbahaya',
+    normal: 'Normal',
+  };
+
+  const color = {
+    good: '#189741',
+    danger: '#CD202D',
+    normal: '#02ABEF',
+  };
+
+  const c = color[getLevel()];
+
   return (
     <Fragment>
       <ScrollView scrollIndicatorInsets={{ right: 1 }}>
@@ -246,14 +276,14 @@ const HealthReportScreen = () => {
             <View className="mt-6">
               <LevelsBadge level="good" size="large" text="Sehat" />
             </View>
-            {!isTodayDate && (
+            {/* {!isTodayDate && (
               <TouchableOpacity
                 className="mt-4"
                 hitSlop={8}
                 onPress={() => navigation.navigate('HealthHistory')}>
                 <Text className="text-xs font-bold text-primary">Lihat detail riwayat</Text>
               </TouchableOpacity>
-            )}
+            )} */}
           </View>
         </View>
         <View className="px-4 mt-4">
@@ -290,7 +320,7 @@ const HealthReportScreen = () => {
               mode={mode}
             />
 
-            <View className="flex-row items-center space-x-2 px-4 mt-4">
+            {/* <View className="flex-row items-center space-x-2 px-4 mt-4">
               {screentimeReport.map((item, index) => (
                 <View
                   key={index}
@@ -304,7 +334,7 @@ const HealthReportScreen = () => {
                   <Text className="font-semibold text-primary">{item.title}</Text>
                 </View>
               ))}
-            </View>
+            </View> */}
           </View>
         </View>
 
@@ -334,19 +364,18 @@ const HealthReportScreen = () => {
 
         <View className="px-4 mt-4">
           <View className="border border-primary rounded-xl p-4">
+            <View className="flex-row">
+              <View className={cn('px-8 py-1 rounded-md')} style={{ backgroundColor: c }}>
+                <Text className="text-white text-xs">{label[getLevel()]}</Text>
+              </View>
+            </View>
             <View className="flex-row items-center">
               <View className="flex-1">
-                <View className="flex-row">
-                  <View className="bg-normal px-8 py-1 rounded-md">
-                    <Text className="text-white text-xs">Normal</Text>
-                  </View>
-                </View>
-                <Text className="text-base font-bold mt-2">Pencahayaan Gadget kamu: </Text>
+                <Text className="text-base font-bold mt-2">Level Pencahayaan Gadget kamu: </Text>
               </View>
 
               <View>
-                <Text className="text-primary text-xs font-serif">Skor:</Text>
-                <Text className="text-2xl">80</Text>
+                <Text className="text-2xl">{level}</Text>
               </View>
             </View>
           </View>

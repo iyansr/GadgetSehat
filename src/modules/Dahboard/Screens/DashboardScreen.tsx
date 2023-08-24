@@ -22,6 +22,12 @@ type Menu = {
   action: () => void;
 };
 
+// Misal
+// < 2 jam normal
+// 2 < 4 jam sehat
+// 4 < 6 jam kurang sehat
+// 6 < kecanduan
+
 const Item = ({ item }: { item: Menu }) => {
   return (
     <TouchableOpacity
@@ -89,6 +95,28 @@ const DashboardScreen = () => {
     },
   ];
 
+  const totalTime = convertMsToHour(totalScreenTime?.timeSpent || 0);
+
+  const getLevel = () => {
+    if (totalTime >= 0 && totalTime <= 2) {
+      return 'normal';
+    } else if (totalTime >= 2 && totalTime <= 4) {
+      return 'good';
+    } else if (totalTime >= 4 && totalTime <= 6) {
+      return 'warning';
+    } else if (totalTime >= 6) {
+      return 'danger';
+    }
+    return 'normal';
+  };
+
+  const label = {
+    good: 'Sehat',
+    danger: 'Kecanduan',
+    warning: 'Awas!',
+    normal: 'Normal',
+  };
+
   return (
     <ScrollView>
       <DashboardHeader />
@@ -111,7 +139,7 @@ const DashboardScreen = () => {
                 <DoubleArrowIcon />
               </TouchableOpacity>
               <Text className="text-[9px] mb-2 mt-1">Tingkat Kecanduan</Text>
-              <LevelsBadge text="Sehat" level="good" />
+              <LevelsBadge text={label[getLevel()]} level={getLevel()} />
             </View>
           </View>
 
