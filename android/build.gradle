@@ -11,6 +11,7 @@ buildscript {
         ndkVersion = "23.1.7779620"
         googlePlayServicesAuthVersion = "19.2.0" // <--- use this version or newer
         kotlinVersion = "1.8.0"
+        supportLibVersion = "28.0.0"
     }
     repositories {
         google()

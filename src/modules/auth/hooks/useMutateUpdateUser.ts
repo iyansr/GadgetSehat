@@ -1,14 +1,18 @@
-import firestore from '@react-native-firebase/firestore';
 import { type UserSchema } from '../schema';
 import { useMutation } from '@tanstack/react-query';
-
-async function updateUser(userId: string, data: UserSchema) {
-  return firestore().collection('users').doc(userId).set(data, { merge: true });
-}
+import axios from '@gs/lib/axios';
 
 const useMutateUpdateUser = () => {
-  return useMutation<unknown, unknown, { userId: string; data: UserSchema }>({
-    mutationFn: ({ userId, data }) => updateUser(userId, data),
+  return useMutation<unknown, unknown, { userId: string; data: Partial<UserSchema> }>({
+    mutationFn: async ({ userId, data }) => {
+      const response = await axios.request<UserSchema>({
+        method: 'PATCH',
+        url: `users/${userId}`,
+        data,
+      });
+
+      return response.data;
+    },
     mutationKey: ['updateUser'],
   });
 };

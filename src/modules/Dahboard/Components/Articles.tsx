@@ -3,8 +3,16 @@ import { Image, ScrollView, View } from 'react-native';
 import React from 'react';
 import Text from '@gs/components/basic/Text';
 import TouchableOpacity from '@gs/components/basic/TouchableOpacity';
+import useQueryNews from '../hooks/useQueryNews';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 const Articles = () => {
+  const { data, isLoading } = useQueryNews();
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <View>
       <View className="flex-row justify-between px-4">
@@ -18,22 +26,23 @@ const Articles = () => {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingVertical: 12, paddingLeft: 16 }}>
-        {[1, 2, 3, 4, 5].map(item => (
+        {data?.map(item => (
           <TouchableOpacity
-            key={item}
+            key={item.id}
+            onPress={async () => {
+              if (await InAppBrowser.isAvailable()) {
+                await InAppBrowser.open(item.link);
+              }
+            }}
             className="mr-3 bg-white rounded-xl overflow-hidden w-[220px]"
             style={{ elevation: 4 }}>
-            <Image
-              source={{ uri: 'https://picsum.photos/400' }}
-              className="w-[220px] h-[120px] object-cover"
-            />
+            <Image source={{ uri: item.imageURL }} className="w-[220px] h-[120px] object-cover" />
             <View className="p-2">
-              <Text className="text-[10px] text-neutral-500">12/08/2020</Text>
               <Text
                 numberOfLines={2}
                 ellipsizeMode="tail"
                 className="text-xs font-medium text leading-4">
-                Berikan Gadget kepada anak? Jangan lupa pengawasannya
+                {item.title}
               </Text>
 
               <Text className="mt-6 text-xs text-primary">Baca Selengkapnya</Text>

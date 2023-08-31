@@ -11,6 +11,7 @@ export const updateUserSchema = z.object({
     .refine(val => /^\+62\d{8,14}$/.test(val), { message: 'Nomor WA tidak valid' }),
   province: z.string({ required_error: 'Provinsi harus diisi' }),
   city: z.string({ required_error: 'Kota / Kabupaten harus diisi' }),
+  email: z.string().email().optional(),
 });
 
 export type UserSchema = z.infer<typeof updateUserSchema>;

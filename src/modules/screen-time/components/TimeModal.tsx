@@ -27,8 +27,6 @@ const minutesPickerData = minutes.map(minute => ({
 const TimeModal = ({ onConfirm, isVisible, onClose }: Props) => {
   const [time, setTime] = useState({ hour: 0, minute: 1 });
 
-  console.log({ time });
-
   const handleConfirm = () => {
     const seconds = time.hour * 3600 + time.minute * 60;
     onConfirm?.(seconds);
